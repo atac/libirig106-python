@@ -1,0 +1,3 @@
+[submodule "libirig106"]
+	path = libirig106
+	url = git@bitbucket.org:mcferrill/irig106lib.git
