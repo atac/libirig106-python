@@ -9,7 +9,7 @@ import sys
 # Find source and header files.
 sources = []
 headers = []
-for pth, _, filenames in os.walk('../src'):
+for pth, _, filenames in os.walk('libirig106/src'):
     for filename in filenames:
         filename = os.path.join(pth, filename)
         if filename.endswith(('.c')):
@@ -26,7 +26,11 @@ if sys.platform == 'win32':
     link_flags = []
 else:
     flags = [
-        '-fPIC', '-Wall', '-Wno-parentheses', '-Werror=switch',
+        '-fPIC', '-Wall', '-Wno-parentheses',  # '-Werror=switch',
+        '-D_FILE_OFFSET_BITS=64',
+        '-D_LARGEFILE64_SOURCE',
+        '-ggdb',
+        '-fpack-struct=1',
     ]
 
     platform.mac_ver()
