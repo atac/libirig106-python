@@ -35,8 +35,8 @@ else:
 
     platform.mac_ver()
     if platform.system() in ['Darwin', 'FreeBSD']:
-        os.environ.setdefault('CC', 'clang')
-        os.environ.setdefault('CXX', 'clang++')
+        os.environ.setdefault('CC', 'gcc')
+        os.environ.setdefault('CXX', 'gcc')
         orig_customize_compiler = distutils.sysconfig.customize_compiler
 
         def customize_compiler(compiler):
