@@ -5,7 +5,7 @@ import sys
 
 
 # Find source and header files.
-sources, headers = [], []
+sources, headers = ['_irig106.c'], []
 for pth, _, filenames in os.walk('libirig106/src'):
     for filename in filenames:
         filename = os.path.join(pth, filename)
