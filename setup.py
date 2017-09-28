@@ -37,5 +37,5 @@ setup(
     name='libirig106',
     version='0.0.1',
     ext_modules=[_i106],
-    packages=['irig106'],
+    packages=['i106'],
 )
