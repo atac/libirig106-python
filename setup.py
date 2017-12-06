@@ -1,19 +1,18 @@
 
 from setuptools import setup, Extension
-from glob import glob
-# import os
+# from glob import glob
 import sys
 
 
 # Find source and header files.
 sources, headers = ['_irig106.c'], []
-sources += glob('libirig106/src/*.c')
-headers += glob('libirig106/src/*.h')
+# sources += glob('libirig106/src/*.c')
+# headers += glob('libirig106/src/*.h')
 
 # Define flags based on platform.
+link_flags = []
 if sys.platform == 'win32':
     flags = ['/Od', '/EHsc', '/MT']
-    link_flags = []
 else:
     flags = [
         '-c', '-std=c99',
@@ -25,7 +24,7 @@ else:
     ]
     link_flags = ['-fPIC']
 
-_i106 = Extension(
+ext = Extension(
     '_i106',
     sources,
     depends=headers,
@@ -36,6 +35,6 @@ _i106 = Extension(
 setup(
     name='libirig106',
     version='0.0.1',
-    ext_modules=[_i106],
-    packages=['i106'],
+    ext_modules=[ext],
+    # packages=['i106'],
 )

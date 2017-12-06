@@ -1,44 +1,31 @@
 
 #include <Python.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "libirig106/src/irig106ch10.h"
 
-
-// Functions
-
-static PyObject *i106_open(PyObject *self, PyObject *args){
-    char *filename;
-    int mode;
-    if (!PyArg_ParseTuple(args, "si", &filename, &mode))
-        return NULL;
-
-    int handle;
-    I106Status status = I106C10Open(&handle, filename, (I106C10Mode)mode);
-
-    return Py_BuildValue("ii", (int)status, handle);
-}
-
-
-static PyObject *hello(PyObject *self, PyObject *args){
-    printf("Hello from c!\n");
+PyObject * i106_open(PyObject *self, PyObject *args){
+    printf("Open");
 
     Py_RETURN_NONE;
 }
 
+PyObject * i106_hello(){
+    printf("Hello");
 
-// Module initialization
+    Py_RETURN_NONE;
+}
 
-static PyMethodDef i106_methods[] = {
-    {"i106_open", (PyCFunction)i106_open, METH_VARARGS, NULL},
-    /* {"hello", (PyCFunction)hello, METH_NOARGS, "Hello world function"}, */
+static PyMethodDef funcs[] = {
+    {"hello", (PyCFunction)i106_hello, METH_NOARGS, "Hello world test"},
+    {"i106_open", (PyCFunction)i106_open, METH_VARARGS, "Open a chapter 10 file"},
     {NULL, NULL, 0, NULL}
 };
 
-
 PyMODINIT_FUNC init_i106(void){
-    PyObject *m = Py_InitModule3("_i106", i106_methods, "This is a placeholder.");
-    if (m == NULL)
-        return;
+    Py_InitModule("_i106", funcs);
+}
+
+int main(int argc, char *argv[]){
+    Py_SetProgramName(argv[0]);
+    Py_Initialize();
+    init_i106();
 }
