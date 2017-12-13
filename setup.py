@@ -22,7 +22,6 @@ else:
         '-D_FILE_OFFSET_BITS=64',
         '-D_LARGEFILE64_SOURCE',
         '-ggdb',
-        # '-fpack-struct=1',  # Causes pointer misalignment
     ]
     link_flags = ['-fPIC']
 
