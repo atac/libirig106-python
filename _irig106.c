@@ -2,23 +2,33 @@
 #include <Python.h>
 #include <stdio.h>
 
+#include "libirig106/src/irig106ch10.h"
+
 
 PyObject * _i106_open(PyObject *self, PyObject *args){
-    printf("Open\n");
+    const char *filename;
+    int mode, handle;
+    if (!PyArg_ParseTuple(args, "si", &filename, &mode))
+        return NULL;
 
-    Py_RETURN_NONE;
+    I106Status status = I106C10Open(&handle, filename, (I106C10Mode)mode);
+    return Py_BuildValue("ii", (int) status, handle);
 }
 
-PyObject * _i106_hello(PyObject *self, PyObject *args){
-    printf("Hello\n");
+PyObject * _i106_next_header(PyObject *self, PyObject *args){
+    int handle;
+    if (!PyArg_ParseTuple(args, "i", &handle))
+        return NULL;
 
-    
-    Py_RETURN_NONE;
+    I106C10Header header;
+    I106Status status = I106C10ReadNextHeader(handle, &header);
+
+    return Py_BuildValue("ii", (int)status, (int)&header);
 }
 
 static PyMethodDef funcs[] = {
-    {"hello", _i106_hello, METH_VARARGS, "Hello world test"},
     {"i106_open", _i106_open, METH_VARARGS, "Open a chapter 10 file"},
+    {"i106_next_header", _i106_next_header, METH_VARARGS, "Read the next header from an open file"},
     {NULL, NULL, 0, NULL}
 };
 
