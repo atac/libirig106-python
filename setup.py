@@ -5,9 +5,11 @@ import sys
 
 
 # Find source and header files.
-sources, headers = ['_irig106.c'], []
-sources += glob('libirig106/src/*.c')
-headers += glob('libirig106/src/*.h')
+sources, headers = [], []
+sources += glob('src/*.c')
+headers += glob('src/*.h')
+sources += glob('src/libirig106/src/*.c')
+headers += glob('src/libirig106/src/*.h')
 
 # Define flags based on platform.
 link_flags = []
@@ -26,7 +28,7 @@ else:
     link_flags = ['-fPIC']
 
 ext = Extension(
-    '_i106',
+    'i106',
     sources,
     depends=headers,
     extra_compile_args=flags,
@@ -34,8 +36,7 @@ ext = Extension(
 )
 
 setup(
-    name='libirig106',
+    name='i106',
     version='0.0.1',
     ext_modules=[ext],
-    # packages=['i106'],
 )
