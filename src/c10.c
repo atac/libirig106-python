@@ -37,17 +37,9 @@ static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
 }
 
 
-static PyObject *C10_next(C10 *self){
-    // Read a header and return a new packet object
-    PyObject *args = Py_BuildValue("(O)", self);
-    PyObject *packet = PyObject_CallObject((PyObject *) &Packet_Type, args);
-    if (packet == NULL){
-        printf("Null packet returned!");
-        return NULL;
-    }
-    /* Py_DECREF(args); */
-    
-    printf("Created packet object. ");
+static PyObject *C10_next(PyObject *self){
+    PyObject *packet = New_Packet(self);
+    Py_INCREF(packet);
 
     return packet;
 }
@@ -92,7 +84,7 @@ static PyTypeObject C10_Type = {
     0,                         /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     PyObject_SelfIter,                         /* tp_iter */
-    0,  //(iternextfunc)C10_next,                         /* tp_iternext */
+    (iternextfunc)C10_next,                         /* tp_iternext */
     C10_methods,             /* tp_methods */
     C10_members,             /* tp_members */
     0,                         /* tp_getset */
@@ -108,7 +100,6 @@ static PyTypeObject C10_Type = {
 
 
 void add_c10_class(PyObject *module){
-	C10_Type.tp_new = PyType_GenericNew;
 	if (PyType_Ready(&C10_Type) < 0)
         return;
 
