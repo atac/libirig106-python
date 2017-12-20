@@ -9,6 +9,7 @@
 
 
 static void Packet_dealloc(Packet *self){
+    Py_DECREF(self->parent);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -30,11 +31,15 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
     }
 
     self->parent = (C10 *)tmp;
+    Py_INCREF(self->parent);
 
     I106C10Header header;
     I106Status status = I106C10ReadNextHeader(self->parent->handle, &header);
     if (status){
-        PyErr_Format(PyExc_RuntimeError, "I106C10ReadNextHeader: %s", I106ErrorString(status));
+        if (status == I106_EOF)
+            PyErr_Format(PyExc_StopIteration, "EOF");
+        else
+            PyErr_Format(PyExc_RuntimeError, "I106C10ReadNextHeader: %s", I106ErrorString(status));
         return -1;
     }
 
@@ -134,6 +139,7 @@ static PyTypeObject Packet_Type = {
 PyObject *New_Packet(PyObject *parent){
     PyObject *packet_args = Py_BuildValue("(O)", parent);
     PyObject *p = PyObject_CallObject((PyObject *) &Packet_Type, packet_args);
+    Py_DECREF(packet_args);
     return p;
 }
 

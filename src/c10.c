@@ -39,7 +39,6 @@ static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
 
 static PyObject *C10_next(PyObject *self){
     PyObject *packet = New_Packet(self);
-    Py_INCREF(packet);
 
     return packet;
 }
