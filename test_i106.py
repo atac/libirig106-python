@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from i106 import C10, Packet
 
 SAMPLE_FILE = 'src/libirig106/tests/copy.c10'
