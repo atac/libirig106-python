@@ -38,9 +38,37 @@ static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
 
 
 static PyObject *C10_next(PyObject *self){
-    PyObject *packet = New_Packet(self);
+    return New_Packet(self);
+}
 
-    return packet;
+
+static PyObject *C10_tell(C10 *self){
+    int64_t pos;
+    I106Status status = I106C10GetPos(self->handle, &pos);
+    if (status){
+        PyErr_Format(PyExc_RuntimeError, "I106C10GetPos: %s", I106ErrorString(status));
+        return NULL;
+    }
+
+    return Py_BuildValue("L", pos);
+}
+
+
+static PyObject *C10_seek(C10 *self, PyObject *args, PyObject *kwargs){
+    static char *keywords[] = {"whence", NULL};
+    int64_t pos;
+    int whence;
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "L|i", keywords, &pos, &whence)){
+        return NULL;
+    }
+
+    I106Status status = I106C10SetPos(self->handle, pos);
+    if (status){
+        PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
+        return NULL;
+    }
+
+    return Py_BuildValue("L", pos);
 }
 
 
@@ -52,6 +80,8 @@ static PyMemberDef C10_members[] = {
 
 
 static PyMethodDef C10_methods[] = {
+    {"tell", (PyCFunction)C10_tell, METH_NOARGS, "Find the current byte offset into the file."},
+    {"seek", (PyCFunction)C10_seek, METH_VARARGS | METH_KEYWORDS, "Seek to a specific byte offset."},
     {NULL}  /* Sentinel */
 };
 
