@@ -1,24 +1,21 @@
 #!/usr/bin/env python
 
-"""Temporary simplistic testing script from the python end."""
-
 from i106 import C10, Packet
+
+SAMPLE_FILE = 'src/libirig106/tests/copy.c10'
 
 
 def test_c10():
-    c = C10('src/libirig106/tests/copy.c10')
-    print (c.handle, c.filename)
-    print(dir(c))
+    c = C10(SAMPLE_FILE)
+    assert c.handle > -1
+    assert c.filename == SAMPLE_FILE
     del c
 
 
 def test_packet():
-    c = C10('src/libirig106/tests/copy.c10')
+    c = C10(SAMPLE_FILE)
     p = Packet(c)
-    print (dir(p))
-    print (p.parent)
+    assert p.parent == c
 
-    for i, packet in enumerate(c):
-        for attr in [a for a in dir(packet) if not a.startswith('__')]:
-            print('%s: %s' % (attr, getattr(packet, attr)))
-        print()
+    for packet in c:
+        assert packet.sync_pattern == 0xeb25
