@@ -19,5 +19,5 @@ class TestPacket:
         assert p.sync_pattern == 0xeb25
 
     def test_bytes(self, p):
-        b = p.bytes()
+        b = bytes(p)
         assert len(b) == p.packet_length, repr(b)

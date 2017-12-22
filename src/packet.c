@@ -135,7 +135,7 @@ static PyMemberDef Packet_members[] = {
 
 
 static PyMethodDef Packet_methods[] = {
-    {"bytes", (PyCFunction)Packet_bytes, METH_NOARGS, "Return the packet as raw bytes"},
+    {"__bytes__", (PyCFunction)Packet_bytes, METH_NOARGS, "Return the packet as raw bytes"},
     {NULL}  /* Sentinel */
 };
 
