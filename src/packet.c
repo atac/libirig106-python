@@ -16,8 +16,6 @@ static void Packet_dealloc(Packet *self){
 
 static PyObject *Packet_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
     Packet *self = (Packet *)type->tp_alloc(type, 0);
-    /* if (self != NULL) */
-    /*     self->parent = NULL; */
 
     return (PyObject *)self;
 }
@@ -63,8 +61,27 @@ static PyObject *Packet_next(Packet *self){
 }
 
 
+static PyObject *Packet_bytes(Packet *self){
+    int head_size = GetHeaderLength((I106C10Header *)&self->SyncPattern);
+    void *buffer = malloc(self->PacketLength);
+    memcpy(buffer, &self->SyncPattern, head_size);
+
+    I106Status status = I106C10ReadData(self->parent->handle, (unsigned long)self->PacketLength - head_size, buffer + head_size);
+    if (status){
+        PyErr_Format(PyExc_RuntimeError, "I106C10ReadData: %s", I106ErrorString(status));
+        return NULL;
+    }
+
+    PyObject *result = Py_BuildValue("y#", (char *)buffer, self->PacketLength);
+    free(buffer);
+
+    return result;
+}
+
+
 static PyMemberDef Packet_members[] = {
     {"parent", T_OBJECT_EX, offsetof(Packet, parent), 0, "Parent C10 object"},
+
     {"sync_pattern", T_USHORT, offsetof(Packet, SyncPattern), 0, "Sync pattern"},
     {"channel_id", T_USHORT, offsetof(Packet, ChannelID), 0, "Channel ID"},
     {"packet_length", T_UINT, offsetof(Packet, PacketLength), 0, "Packet Length (bytes)"},
@@ -83,7 +100,7 @@ static PyMemberDef Packet_members[] = {
 
 
 static PyMethodDef Packet_methods[] = {
-    /* {"test", (PyCFunction)Packet_test, METH_NOARGS | METH_CLASS, "Test the Packet class."}, */
+    {"bytes", (PyCFunction)Packet_bytes, METH_NOARGS, "Return the packet as raw bytes"},
     {NULL}  /* Sentinel */
 };
 
