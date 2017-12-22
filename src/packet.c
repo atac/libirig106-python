@@ -22,6 +22,8 @@ static PyObject *Packet_new(PyTypeObject *type, PyObject *args, PyObject *kwargs
 
 
 static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
+    I106Status status;
+
     PyObject *tmp;
     if (!PyArg_ParseTuple(args, "O", &tmp)){
         printf("No arguments!\n");
@@ -31,10 +33,15 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
     self->parent = (C10 *)tmp;
     Py_INCREF(self->parent);
 
+    if ((status = I106C10GetPos(self->parent->handle, &self->offset))){
+        PyErr_Format(PyExc_RuntimeError, "I106C10GetPos: %s", I106ErrorString(status));
+        return -1;
+    }
+
     I106C10Header header;
-    I106Status status = I106C10ReadNextHeader(self->parent->handle, &header);
-    if (status){
+    if ((status = I106C10ReadNextHeader(self->parent->handle, &header))){
         if (status == I106_EOF)
+            // TODO: StopIteration should be called in C10.next
             PyErr_Format(PyExc_StopIteration, "EOF");
         else
             PyErr_Format(PyExc_RuntimeError, "I106C10ReadNextHeader: %s", I106ErrorString(status));
@@ -66,11 +73,31 @@ static PyObject *Packet_bytes(Packet *self){
     void *buffer = malloc(self->PacketLength);
     memcpy(buffer, &self->SyncPattern, head_size);
 
-    I106Status status = I106C10ReadData(self->parent->handle, (unsigned long)self->PacketLength - head_size, buffer + head_size);
-    if (status){
+    off_t offset;
+    I106FileState state = handles[self->parent->handle].File_State;
+    I106Status status;
+    if ((status = I106C10GetPos(self->parent->handle, &offset))){
+        PyErr_Format(PyExc_RuntimeError, "I106C10GetPos: %s", I106ErrorString(status));
+        return NULL;
+    }
+
+    if ((status = I106C10SetPos(self->parent->handle, self->offset + head_size))){
+        PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
+        return NULL;
+    }
+
+    handles[self->parent->handle].File_State = I106_READ_DATA;
+
+    if ((status = I106C10ReadData(self->parent->handle, self->PacketLength - head_size, buffer + head_size))){
         PyErr_Format(PyExc_RuntimeError, "I106C10ReadData: %s", I106ErrorString(status));
         return NULL;
     }
+
+    if ((status = I106C10SetPos(self->parent->handle, offset))){
+        PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
+        return NULL;
+    }
+    handles[self->parent->handle].File_State = state;
 
     PyObject *result = Py_BuildValue("y#", (char *)buffer, self->PacketLength);
     free(buffer);
@@ -81,6 +108,7 @@ static PyObject *Packet_bytes(Packet *self){
 
 static PyMemberDef Packet_members[] = {
     {"parent", T_OBJECT_EX, offsetof(Packet, parent), 0, "Parent C10 object"},
+    {"offset", T_LONG, offsetof(Packet, offset), 0, "Absolute byte offset within file"},
 
     {"sync_pattern", T_USHORT, offsetof(Packet, SyncPattern), 0, "Sync pattern"},
     {"channel_id", T_USHORT, offsetof(Packet, ChannelID), 0, "Channel ID"},

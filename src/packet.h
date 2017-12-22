@@ -3,6 +3,7 @@
 typedef struct Packet {
     PyObject_HEAD
     C10 *parent;
+    off_t offset;
 
     // Copied from I106C10Header
     uint16_t  SyncPattern;

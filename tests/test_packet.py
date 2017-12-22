@@ -14,7 +14,8 @@ class TestPacket:
     def p(self, c):
         return Packet(c)
 
-    def test_packet(self, p, c):
+    def test_construct(self, p):
+        assert p.offset == 0
         assert p.sync_pattern == 0xeb25
 
     def test_bytes(self, p):
