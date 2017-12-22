@@ -82,7 +82,7 @@ static PyObject *Packet_bytes(Packet *self){
         return NULL;
     }
 
-    if (offset != self->offset){
+    if (offset != (self->offset + head_size)){
         if ((status = I106C10SetPos(self->parent->handle, self->offset + head_size))){
             PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
             return NULL;
@@ -98,7 +98,7 @@ static PyObject *Packet_bytes(Packet *self){
     }
 
     // Restore prior state if applicable.
-    if (offset != self->offset){
+    if (offset != (self->offset + head_size)){
         if ((status = I106C10SetPos(self->parent->handle, offset))){
             PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
             return NULL;
