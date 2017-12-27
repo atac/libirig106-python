@@ -1,4 +1,5 @@
 
+#include "libirig106/src/i106_decode_1553f1.h"
 
 typedef struct Packet {
     PyObject_HEAD
@@ -21,6 +22,12 @@ typedef struct Packet {
     uint32_t  Time[2];
     uint16_t  Reserved;
     uint16_t  SecondaryChecksum;
+
+    // Packet body
+    void *body;
+
+    // 1553
+    MS1553F1_Message  MS1553_MSG;
 } Packet;
 
 static PyObject *Packet_test(PyObject *self);

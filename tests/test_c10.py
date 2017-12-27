@@ -21,7 +21,7 @@ class TestC10:
 
     def test_tell(self, c):
         c.__next__()
-        assert c.tell() == 24
+        assert c.tell() == 6280
 
     def test_seek(self, c):
         c.seek(100)

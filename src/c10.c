@@ -38,7 +38,15 @@ static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
 
 
 static PyObject *C10_next(PyObject *self){
-    return New_Packet(self);
+    PyObject *packet = New_Packet(self);
+    if (packet == NULL && PyErr_Occurred() != NULL){
+        if (PyErr_ExceptionMatches(PyExc_EOFError)){
+            PyErr_Clear();
+            PyErr_Format(PyExc_StopIteration, "Stop iteration (EOF)");
+        }
+        return NULL;
+    }
+    return packet;
 }
 
 
