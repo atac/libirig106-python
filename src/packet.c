@@ -100,8 +100,26 @@ static PyObject *Packet_len(Packet *self){
 }
 
 
+// Iterate over packet messages (depending on data type)
 static PyObject *Packet_next(Packet *self){
-    // Iterate over packet messages (depending on data type)
+    I106Status status;
+    MS1553F1_Message *msg1553 = malloc(sizeof(MS1553F1_Message));
+
+    switch (self->DataType){
+        case I106CH10_DTYPE_1553_FMT_1:
+            memcpy(msg1553, &self->MS1553_MSG, sizeof(MS1553F1_Message));
+            if ((status = I106_Decode_Next1553F1(&self->MS1553_MSG))){
+                if (status == I106_NO_MORE_DATA)
+                    PyErr_Format(PyExc_StopIteration, "No more data");
+                else
+                    PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
+                break;
+            }
+            return (PyObject *)msg1553;
+    }
+
+    printf("Iterate...\n");
+
     return NULL;
 }
 

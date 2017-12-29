@@ -5,6 +5,7 @@
 #include "libirig106/src/irig106ch10.h"
 #include "c10.h"
 #include "packet.h"
+#include "1553.h"
 
 
 static PyMethodDef funcs[] = {
@@ -19,6 +20,7 @@ PyMODINIT_FUNC PyInit_i106(void){
     PyObject *m = PyModule_Create(&_i106);
     add_c10_class(m);
     add_packet_class(m);
+    add_1553_class(m);
     return m;
 }
 

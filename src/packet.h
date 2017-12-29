@@ -1,4 +1,7 @@
 
+#ifndef packet_header
+#define packet_header
+
 #include "libirig106/src/i106_decode_1553f1.h"
 
 typedef struct Packet {
@@ -35,3 +38,5 @@ static PyTypeObject Packet_Type;
 
 PyObject *New_Packet(PyObject *c10);
 void add_packet_class(PyObject *module);
+
+#endif
