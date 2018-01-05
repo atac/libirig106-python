@@ -118,8 +118,6 @@ static PyObject *Packet_next(Packet *self){
             return (PyObject *)msg1553;
     }
 
-    printf("Iterate...\n");
-
     return NULL;
 }
 
