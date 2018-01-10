@@ -1,0 +1,13 @@
+image:
+    name: mcferrill/node-python-git
+    username: $DOCKER_USER
+    password: $DOCKER_PASS
+    email: mcferrill@msn.com
+
+pipelines:
+    default:
+        - step:
+            script:
+                - git submodule init && git submodule update
+                - pip3 install -U pytest
+                - pytest
