@@ -13,4 +13,8 @@ class Test1553:
 
     def test_iteration(self, p):
         for i, msg in enumerate(p):
-            print (i)
+            pass
+        assert i == 83
+
+    def test_ttb(self, p):
+        assert 1 == p.ttb

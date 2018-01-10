@@ -131,6 +131,11 @@ static PyObject *Packet_next(Packet *self){
 }
 
 
+static PyObject *Packet_get_ttb(Packet *self){
+    return Py_BuildValue("i", self->MS1553_MSG->CSDW->TTB);
+}
+
+
 static PyObject *Packet_bytes(Packet *self){
     int head_size = GetHeaderLength((I106C10Header *)&self->SyncPattern);
     void *buffer = malloc(self->PacketLength);
@@ -204,6 +209,7 @@ static PyMethodDef Packet_methods[] = {
 
 static PyGetSetDef Packet_getset[] = {
     {"rtc", (getter)Packet_get_rtc, NULL, "10Mhz RTC clock"},
+    {"ttb", (getter)Packet_get_ttb, NULL, "Time tag bits from 1553 CSDW"},
     {NULL},
 };
 
