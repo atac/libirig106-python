@@ -87,8 +87,8 @@ static PyObject *Packet_get_rtc(Packet *self, void *closure){
 }
 
 
-static PyObject *Packet_len(Packet *self){
-    long len = 0;
+static Py_ssize_t Packet_len(Packet *self){
+    Py_ssize_t len = 0;
 
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
@@ -98,7 +98,7 @@ static PyObject *Packet_len(Packet *self){
             len = 0;
     }
 
-    return Py_BuildValue("l", len);
+    return len;
 }
 
 
@@ -180,6 +180,11 @@ static PyObject *Packet_bytes(Packet *self){
 }
 
 
+static PySequenceMethods Packet_sequence_methods = {
+    (lenfunc)Packet_len,
+};
+
+
 static PyMemberDef Packet_members[] = {
     {"parent", T_OBJECT_EX, offsetof(Packet, parent), 0, "Parent C10 object"},
     {"offset", T_LONG, offsetof(Packet, offset), 0, "Absolute byte offset within file"},
@@ -226,7 +231,7 @@ static PyTypeObject Packet_Type = {
     0,                         /* tp_compare */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
+    &Packet_sequence_methods,                         /* tp_as_sequence */
     0,                         /* tp_as_mapping */
     0,                         /* tp_hash */
     0,                         /* tp_call */

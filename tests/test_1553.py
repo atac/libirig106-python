@@ -16,5 +16,8 @@ class Test1553:
             pass
         assert i == 83
 
+    def test_len(self, p):
+        assert len(p) == 85
+
     def test_ttb(self, p):
         assert 1 == p.ttb
