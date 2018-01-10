@@ -8,4 +8,5 @@ typedef struct MS1553Msg {
     MS1553F1_Message msg;
 } MS1553Msg;
 
+PyObject *New_MS1553Msg(PyObject *parent);
 void add_1553_class(PyObject *module);

@@ -30,7 +30,7 @@ typedef struct Packet {
     void *body;
 
     // 1553
-    MS1553F1_Message  MS1553_MSG;
+    MS1553F1_Message  *MS1553_MSG;
 } Packet;
 
 static PyObject *Packet_test(PyObject *self);

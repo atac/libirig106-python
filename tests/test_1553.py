@@ -12,5 +12,6 @@ class Test1553:
                 return packet
 
     def test_iteration(self, p):
+        # print ('%s messages' % len(p))
         for i, msg in enumerate(p):
             print (i)

@@ -6,6 +6,7 @@
 #include "libirig106/src/i106_decode_1553f1.h"
 
 #include "c10.h"
+#include "1553.h"
 #include "packet.h"
 
 
@@ -68,7 +69,8 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
     // Read Channel Specific Data Word (CSDW) and first message
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
-            if ((status = I106_Decode_First1553F1(&header, self->body, &self->MS1553_MSG))){
+            self->MS1553_MSG = malloc(sizeof(MS1553F1_Message));
+            if ((status = I106_Decode_First1553F1(&header, self->body, self->MS1553_MSG))){
                 PyErr_Format(PyExc_RuntimeError, "I106DecodeFirst1553: %s", I106ErrorString(status));
                 return -1;
             }
@@ -90,7 +92,7 @@ static PyObject *Packet_len(Packet *self){
 
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
-            len = self->MS1553_MSG.CSDW->MessageCount;
+            len = self->MS1553_MSG->CSDW->MessageCount;
             break;
         default:
             len = 0;
@@ -104,18 +106,25 @@ static PyObject *Packet_len(Packet *self){
 static PyObject *Packet_next(Packet *self){
     I106Status status;
     MS1553F1_Message *msg1553 = malloc(sizeof(MS1553F1_Message));
+    PyObject *msg;
 
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
-            memcpy(msg1553, &self->MS1553_MSG, sizeof(MS1553F1_Message));
-            if ((status = I106_Decode_Next1553F1(&self->MS1553_MSG))){
+            if (self->MS1553_MSG == NULL){
+                PyErr_Format(PyExc_StopIteration, "No more data");
+                break;
+            }
+
+            msg = New_MS1553Msg((PyObject *)self);
+
+            if ((status = I106_Decode_Next1553F1(self->MS1553_MSG))){
                 if (status == I106_NO_MORE_DATA)
-                    PyErr_Format(PyExc_StopIteration, "No more data");
+                    self->MS1553_MSG = NULL;
                 else
                     PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
                 break;
             }
-            return (PyObject *)msg1553;
+            return msg;
     }
 
     return NULL;
