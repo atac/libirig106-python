@@ -8,7 +8,8 @@ pipelines:
     default:
         - step:
             script:
+                - apt install -y build-essential
                 - git submodule init && git submodule update
                 - pip3 install -U pip setuptools pytest
-                - python3 setup.py install
+                - python3.6 setup.py install
                 - pytest
