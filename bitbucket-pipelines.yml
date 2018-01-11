@@ -1,5 +1,5 @@
 image:
-    name: mcferrill/node-python-git
+    name: mcferrill/node-python-git:py3
     username: $DOCKER_USER
     password: $DOCKER_PASS
     email: mcferrill@msn.com
