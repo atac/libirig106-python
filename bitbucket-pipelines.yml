@@ -9,5 +9,6 @@ pipelines:
         - step:
             script:
                 - git submodule init && git submodule update
+                - python3 setup.py install
                 - pip3 install -U pytest
                 - pytest
