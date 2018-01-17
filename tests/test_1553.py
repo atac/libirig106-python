@@ -21,3 +21,8 @@ class Test1553:
 
     def test_ttb(self, p):
         assert 1 == p.ttb
+
+    def test_wordcount(self, p):
+        for msg in p:
+            assert len(msg) == 26
+            break

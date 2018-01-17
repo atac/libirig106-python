@@ -32,14 +32,15 @@ static int MS1553Msg_init(MS1553Msg *self, PyObject *args, PyObject *kwargs){
     }
 
     self->packet = (Packet *)tmp;
+    self->msg = *self->packet->MS1553_MSG;
     Py_INCREF(self->packet);
 
     return 0;
 }
 
 
-static PyObject *MS1553Msg_len(MS1553Msg *self){
-    return Py_BuildValue("l", self->msg.WordCount);
+static Py_ssize_t MS1553Msg_len(PyObject *self){
+    return (Py_ssize_t)((MS1553Msg *)self)->msg.WordCount;
 }
 
 
@@ -65,6 +66,18 @@ static PyGetSetDef MS1553Msg_getset[] = {
 };
 
 
+static PySequenceMethods MS1553Msg_seq = {
+    MS1553Msg_len, // sq_length
+    0, // sq_concat
+    0, // sq_repeat
+    0, // sq_item
+    0, // sq_ass_item
+    0, // sq_contains
+    0, // sq_inplace_concat
+    0  // sq_inplace_repeat
+};
+
+
 static PyTypeObject MS1553Msg_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "i106.MS1553Msg",             /* tp_name */
@@ -77,7 +90,7 @@ static PyTypeObject MS1553Msg_Type = {
     0,                         /* tp_compare */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
+    &MS1553Msg_seq,            /* tp_as_sequence */
     0,                         /* tp_as_mapping */
     0,                         /* tp_hash */
     0,                         /* tp_call */
