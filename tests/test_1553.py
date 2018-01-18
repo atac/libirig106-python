@@ -26,3 +26,9 @@ class Test1553:
         for msg in p:
             assert len(msg) == 26
             break
+
+    def test_word_iteration(self, p):
+        for msg in p:
+            for word in msg:
+                assert word == 8
+                return

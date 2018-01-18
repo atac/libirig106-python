@@ -33,6 +33,7 @@ static int MS1553Msg_init(MS1553Msg *self, PyObject *args, PyObject *kwargs){
 
     self->packet = (Packet *)tmp;
     self->msg = *self->packet->MS1553_MSG;
+    self->cur_word = 0;
     Py_INCREF(self->packet);
 
     return 0;
@@ -44,9 +45,15 @@ static Py_ssize_t MS1553Msg_len(PyObject *self){
 }
 
 
-// TODO: iterate over data words
 static PyObject *MS1553Msg_next(MS1553Msg *self){
-    return NULL;
+    if (self->cur_word >= self->msg.WordCount)
+        return NULL;
+
+    int offset = sizeof(uint16_t) * self->cur_word;
+    uint16_t w = *(self->msg.Data + self->cur_word);
+    PyObject *val = Py_BuildValue("i", w);
+    self->cur_word += 1;
+    return val;
 }
 
 
@@ -66,11 +73,16 @@ static PyGetSetDef MS1553Msg_getset[] = {
 };
 
 
+static PyObject *MS1553Msg_GetItem (PyObject *self, Py_ssize_t i){
+    return 0;
+} 
+
+
 static PySequenceMethods MS1553Msg_seq = {
     MS1553Msg_len, // sq_length
     0, // sq_concat
     0, // sq_repeat
-    0, // sq_item
+    MS1553Msg_GetItem, // sq_item
     0, // sq_ass_item
     0, // sq_contains
     0, // sq_inplace_concat
@@ -105,7 +117,7 @@ static PyTypeObject MS1553Msg_Type = {
     0,                         /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     PyObject_SelfIter,                         /* tp_iter */
-    0,                         /* tp_iternext */
+    (iternextfunc)MS1553Msg_next,                         /* tp_iternext */
     MS1553Msg_methods,             /* tp_methods */
     MS1553Msg_members,             /* tp_members */
     MS1553Msg_getset,                         /* tp_getset */
