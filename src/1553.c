@@ -49,7 +49,6 @@ static PyObject *MS1553Msg_next(MS1553Msg *self){
     if (self->cur_word >= self->msg.WordCount)
         return NULL;
 
-    int offset = sizeof(uint16_t) * self->cur_word;
     uint16_t w = *(self->msg.Data + self->cur_word);
     PyObject *val = Py_BuildValue("i", w);
     self->cur_word += 1;
@@ -73,20 +72,46 @@ static PyGetSetDef MS1553Msg_getset[] = {
 };
 
 
-static PyObject *MS1553Msg_GetItem (PyObject *self, Py_ssize_t i){
-    return 0;
+static PyObject *MS1553Msg_GetItem_seq(MS1553Msg *self, Py_ssize_t i){
+    uint16_t w = *(self->msg.Data + (uint16_t)i);
+    return Py_BuildValue("i", w);
+}
+
+
+static PyObject *MS1553Msg_GetItem(MS1553Msg *self, PyObject *i){
+    if (!PySlice_Check(i)){
+        int offset;
+        PyArg_Parse(i, "i", &offset);
+        return MS1553Msg_GetItem_seq(self, (Py_ssize_t)offset);
+    }
+
+    Py_ssize_t length, start, stop, step;
+    PySlice_GetIndicesEx(i, MS1553Msg_len((PyObject *)self), &start, &stop, &step, &length);
+
+    PyObject *t = PyTuple_New(length);
+    for (Py_ssize_t i=0; i<(length); i++){
+        PyTuple_SetItem(t, i, MS1553Msg_GetItem_seq(self, i + start));
+    }
+
+    return t;
 } 
 
 
-static PySequenceMethods MS1553Msg_seq = {
+static PyMappingMethods MS1553Msg_map = {
     MS1553Msg_len, // sq_length
+    (binaryfunc)MS1553Msg_GetItem, // sq_item
+};
+
+
+static PySequenceMethods MS1553Msg_seq = {
+    MS1553Msg_len, // mp_length
     0, // sq_concat
     0, // sq_repeat
-    MS1553Msg_GetItem, // sq_item
+    (ssizeargfunc)MS1553Msg_GetItem_seq, // sq_item
     0, // sq_ass_item
     0, // sq_contains
     0, // sq_inplace_concat
-    0  // sq_inplace_repeat
+    0, // sq_inplace_repeat
 };
 
 
@@ -103,7 +128,7 @@ static PyTypeObject MS1553Msg_Type = {
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
     &MS1553Msg_seq,            /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
+    &MS1553Msg_map,            /* tp_as_mapping */
     0,                         /* tp_hash */
     0,                         /* tp_call */
     0,                         /* tp_str */

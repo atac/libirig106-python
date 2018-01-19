@@ -11,6 +11,11 @@ class Test1553:
             if packet.data_type == 25:
                 return packet
 
+    @pytest.fixture
+    def msg(self, p):
+        for msg in p:
+            return msg
+
     def test_iteration(self, p):
         for i, msg in enumerate(p):
             pass
@@ -22,13 +27,16 @@ class Test1553:
     def test_ttb(self, p):
         assert 1 == p.ttb
 
-    def test_wordcount(self, p):
-        for msg in p:
-            assert len(msg) == 26
-            break
+    def test_wordcount(self, msg):
+        assert len(msg) == 26
 
-    def test_word_iteration(self, p):
-        for msg in p:
-            for word in msg:
-                assert word == 8
-                return
+    def test_word_iteration(self, msg):
+        for word in msg:
+            assert word == 8
+            return
+
+    def test_getitem(self, msg):
+        assert msg[2] == 65535
+
+    def test_getslice(self, msg):
+        assert msg[:3] == (8, 8903, 65535)
