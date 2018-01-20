@@ -78,15 +78,15 @@ static PyObject *MS1553Msg_GetItem_seq(MS1553Msg *self, Py_ssize_t i){
 }
 
 
-static PyObject *MS1553Msg_GetItem(MS1553Msg *self, PyObject *i){
-    if (!PySlice_Check(i)){
+static PyObject *MS1553Msg_GetItem(MS1553Msg *self, PyObject *key){
+    if (!PySlice_Check(key)){
         int offset;
-        PyArg_Parse(i, "i", &offset);
+        PyArg_Parse(key, "i", &offset);
         return MS1553Msg_GetItem_seq(self, (Py_ssize_t)offset);
     }
 
     Py_ssize_t length, start, stop, step;
-    PySlice_GetIndicesEx(i, MS1553Msg_len((PyObject *)self), &start, &stop, &step, &length);
+    PySlice_GetIndicesEx(key, MS1553Msg_len((PyObject *)self), &start, &stop, &step, &length);
 
     PyObject *t = PyTuple_New(length);
     for (Py_ssize_t i=0; i<(length); i++){
@@ -104,7 +104,7 @@ static PyMappingMethods MS1553Msg_map = {
 
 
 static PySequenceMethods MS1553Msg_seq = {
-    MS1553Msg_len, // mp_length
+    MS1553Msg_len, // sq_length
     0, // sq_concat
     0, // sq_repeat
     (ssizeargfunc)MS1553Msg_GetItem_seq, // sq_item
@@ -136,7 +136,7 @@ static PyTypeObject MS1553Msg_Type = {
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,        /* tp_flags */
-    "Chapter 10 packet object",           /* tp_doc */
+    "1553 message object",           /* tp_doc */
     0,                         /* tp_traverse */
     0,                         /* tp_clear */
     0,                         /* tp_richcompare */
