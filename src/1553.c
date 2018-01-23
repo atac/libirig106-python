@@ -56,6 +56,46 @@ static PyObject *MS1553Msg_next(MS1553Msg *self){
 }
 
 
+static PyObject *MS1553Msg_get_we(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->WordError);
+}
+
+static PyObject *MS1553Msg_get_se(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->SyncError);
+}
+
+static PyObject *MS1553Msg_get_wc(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->WordCountError);
+}
+
+static PyObject *MS1553Msg_get_timeout(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->Timeout);
+}
+
+static PyObject *MS1553Msg_get_fe(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->FormatError);
+}
+
+static PyObject *MS1553Msg_get_rt2rt(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->RT2RT);
+}
+
+static PyObject *MS1553Msg_get_me(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->MessageError);
+}
+
+static PyObject *MS1553Msg_get_bus(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->BusID);
+}
+
+static PyObject *MS1553Msg_get_gap(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->GapTime1);
+}
+
+static PyObject *MS1553Msg_get_length(MS1553Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->Length);
+}
+
 static PyMemberDef MS1553Msg_members[] = {
     {"packet", T_OBJECT_EX, offsetof(MS1553Msg, packet), 0, "Parent C10 object"},
     {NULL}
@@ -68,7 +108,17 @@ static PyMethodDef MS1553Msg_methods[] = {
 
 
 static PyGetSetDef MS1553Msg_getset[] = {
-    {NULL},
+    {"we", (getter)MS1553Msg_get_we, NULL, "Word error"},
+    {"se", (getter)MS1553Msg_get_se, NULL, "Sync error"},
+    {"le", (getter)MS1553Msg_get_wc, NULL, "Word count error"},
+    {"timeout", (getter)MS1553Msg_get_timeout, NULL, "Timeout"},
+    {"fe", (getter)MS1553Msg_get_fe, NULL, "Format error"},
+    {"rt2rt", (getter)MS1553Msg_get_rt2rt, NULL, "RT to RT flag"},
+    {"me", (getter)MS1553Msg_get_me, NULL, "Message error"},
+    {"bus", (getter)MS1553Msg_get_bus, NULL, "Bus ID"},
+    {"gap_time", (getter)MS1553Msg_get_gap, NULL, "Gap time"},
+    {"length", (getter)MS1553Msg_get_length, NULL, "Length"},
+    {NULL}
 };
 
 
