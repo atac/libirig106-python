@@ -40,3 +40,11 @@ class Test1553:
 
     def test_getslice(self, msg):
         assert msg[:3] == (8, 8903, 65535)
+
+    def test_bytes(self, msg):
+        first = bytes(msg)
+        if msg.bus:
+            msg.bus = 0
+        else:
+            msg.bus = 1
+        assert first != bytes(msg)

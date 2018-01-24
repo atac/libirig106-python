@@ -56,6 +56,18 @@ static PyObject *MS1553Msg_next(MS1553Msg *self){
 }
 
 
+static PyObject *MS1553Msg_bytes(MS1553Msg *self){
+    int buf_size = sizeof(MS1553F1_IPH) + self->msg.IPH->Length;
+    void *buffer = malloc(buf_size);
+    memcpy(buffer, self->msg.IPH, buf_size);
+
+    PyObject *result = Py_BuildValue("y#", (char *)buffer, buf_size);
+    free(buffer);
+
+    return result;
+}
+
+
 static PyObject *MS1553Msg_get_we(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->WordError);
 }
@@ -88,6 +100,15 @@ static PyObject *MS1553Msg_get_bus(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->BusID);
 }
 
+int MS1553Msg_set_bus(MS1553Msg *self, PyObject *args, void *closure){
+    int val;
+    if (!PyArg_Parse(args, "i", &val))
+        return -1;
+
+    self->msg.IPH->BusID = val;
+    return 0;
+}
+
 static PyObject *MS1553Msg_get_gap(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->GapTime1);
 }
@@ -103,6 +124,7 @@ static PyMemberDef MS1553Msg_members[] = {
 
 
 static PyMethodDef MS1553Msg_methods[] = {
+    {"__bytes__", (PyCFunction)MS1553Msg_bytes, METH_NOARGS, "Return the message as raw bytes"},
     {NULL}  /* Sentinel */
 };
 
@@ -115,7 +137,7 @@ static PyGetSetDef MS1553Msg_getset[] = {
     {"fe", (getter)MS1553Msg_get_fe, NULL, "Format error"},
     {"rt2rt", (getter)MS1553Msg_get_rt2rt, NULL, "RT to RT flag"},
     {"me", (getter)MS1553Msg_get_me, NULL, "Message error"},
-    {"bus", (getter)MS1553Msg_get_bus, NULL, "Bus ID"},
+    {"bus", (getter)MS1553Msg_get_bus, (setter)MS1553Msg_set_bus, "Bus ID"},
     {"gap_time", (getter)MS1553Msg_get_gap, NULL, "Gap time"},
     {"length", (getter)MS1553Msg_get_length, NULL, "Length"},
     {NULL}
