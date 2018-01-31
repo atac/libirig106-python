@@ -15,6 +15,13 @@ class TestC10:
         assert c.handle > -1
         assert c.filename == SAMPLE_FILE
 
+    def test_open_buffer(self):
+        with open(SAMPLE_FILE, 'rb') as f:
+            buf = f.read(1000)
+
+        c = C10(buffer=buf)
+        assert c.filename == '<buffer>'
+
     def test_iteration(self, c):
         for p in c:
             assert isinstance(p, Packet)

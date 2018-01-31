@@ -19,18 +19,33 @@ static PyObject *C10_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
     if (self != NULL)
         self->handle = -1;
 
+    self->filename = NULL;
+
     return (PyObject *)self;
 }
 
 
 static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
-    if (!PyArg_ParseTuple(args, "s", &self->filename))
+    I106Status status;
+    Py_buffer buffer;
+    buffer.buf = NULL;
+
+    char *kwlist[] = {"filename", "buffer", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|zz*", kwlist, &self->filename, &buffer))
         return -1;
 
-    I106Status status = I106C10Open(&self->handle, self->filename, READ);
-    if (status){
-        PyErr_Format(PyExc_RuntimeError, "I106C10Open: %s", I106ErrorString(status));
-        return -1;
+    if (buffer.buf == NULL){
+        if ((status = I106C10Open(&self->handle, self->filename, READ))){
+            PyErr_Format(PyExc_RuntimeError, "I106C10Open: %s", I106ErrorString(status));
+            return -1;
+        }
+    }
+    else {
+        self->filename = "<buffer>";
+        if ((status = I106C10OpenBuffer(&self->handle, buffer.buf, buffer.len, READ))){
+            PyErr_Format(PyExc_RuntimeError, "I106C10OpenBuffer: %s", strerror(errno)); //I106ErrorString(status));
+            return -1;
+        }
     }
 
     return 0;
