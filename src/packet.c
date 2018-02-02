@@ -138,7 +138,7 @@ static PyObject *Packet_get_ttb(Packet *self){
 
 static PyObject *Packet_bytes(Packet *self){
     int head_size = GetHeaderLength((I106C10Header *)&self->SyncPattern);
-    void *buffer = malloc(self->PacketLength);
+    char *buffer = malloc(self->PacketLength);
     memcpy(buffer, &self->SyncPattern, head_size);
 
     // Track our last position and state so we can restore the file cursor if needed.
