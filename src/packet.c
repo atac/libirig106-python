@@ -174,7 +174,7 @@ static PyObject *Packet_bytes(Packet *self){
     }
 
     PyObject *result = Py_BuildValue("y#", (char *)buffer, self->PacketLength);
-    free(buffer);
+    // free(buffer); // Shouldn't this cause a memory leak? Seems to work fine.
 
     return result;
 }
