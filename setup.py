@@ -1,7 +1,27 @@
+#!/usr/bin/env python
 
-from setuptools import setup, Extension
+from distutils.cmd import Command
 from glob import glob
+from setuptools import setup, Extension
+from shutil import rmtree
+import os
 import sys
+
+
+class Clean(Command):
+    description = 'clean build and dist directories'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        for path in ('build', 'dist', 'i106.egg-info'):
+            if os.path.exists(path):
+                rmtree(path)
 
 
 # Find source and header files.
@@ -39,4 +59,5 @@ setup(
     name='i106',
     version='0.0.1',
     ext_modules=[ext],
+    cmdclass={'clean': Clean},
 )
