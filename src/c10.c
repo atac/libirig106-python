@@ -44,7 +44,7 @@ static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
     else {
         self->filename = "<buffer>";
         if ((status = I106C10OpenBuffer(&self->handle, buffer.buf, buffer.len, READ))){
-            PyErr_Format(PyExc_RuntimeError, "I106C10OpenBuffer: %s", strerror(errno)); //I106ErrorString(status));
+            PyErr_Format(PyExc_RuntimeError, "I106C10OpenBuffer: %s", I106ErrorString(status)); //I106ErrorString(status));
             return -1;
         }
     }
