@@ -60,4 +60,6 @@ setup(
     version='0.0.1',
     ext_modules=[ext],
     cmdclass={'clean': Clean},
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
 )
