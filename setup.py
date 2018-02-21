@@ -19,9 +19,15 @@ class Clean(Command):
         pass
 
     def run(self):
-        for path in ('build', 'dist', 'i106.egg-info'):
+        build_items = ['build', 'dist', 'i106.egg-info', '.cache', '.eggs',
+                       '.pytest_cache']
+        build_items += glob('*.so')
+        for path in build_items:
             if os.path.exists(path):
-                rmtree(path)
+                if os.path.isdir(path):
+                    rmtree(path)
+                else:
+                    os.remove(path)
 
 
 # Find source and header files.
