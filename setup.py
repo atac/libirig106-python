@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-1/0
-
 from distutils.cmd import Command
 from glob import glob
 from setuptools import setup, Extension
