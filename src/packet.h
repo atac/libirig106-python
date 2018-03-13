@@ -2,6 +2,7 @@
 #ifndef packet_header
 #define packet_header
 
+#include "libirig106/src/i106_decode_time.h"
 #include "libirig106/src/i106_decode_1553f1.h"
 
 typedef struct Packet {
@@ -28,6 +29,9 @@ typedef struct Packet {
 
     // Packet body
     void *body;
+
+    // Time
+    I106Time *I106Time;
 
     // 1553
     MS1553F1_Message  *MS1553_MSG;

@@ -1,5 +1,6 @@
 
 #include <Python.h>
+#include "datetime.h"
 #include "structmember.h"
 
 #include "libirig106/src/irig106ch10.h"
@@ -74,6 +75,15 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
                 PyErr_Format(PyExc_RuntimeError, "I106DecodeFirst1553: %s", I106ErrorString(status));
                 return -1;
             }
+            break;
+
+        case I106CH10_DTYPE_IRIG_TIME:
+            self->I106Time = malloc(sizeof(I106Time));
+            if ((status = I106_Decode_TimeF1(&header, self->body, self->I106Time))){
+                PyErr_Format(PyExc_RuntimeError, "I106Decode_TimeF1: %s", I106ErrorString(status));
+                return -1;
+            }
+            break;
     }
 
     return 0;
@@ -180,6 +190,15 @@ static PyObject *Packet_bytes(Packet *self){
 }
 
 
+static PyObject *Packet_get_time(Packet *self){
+    double seconds = (double)self->I106Time->Seconds;
+    seconds += (double)self->I106Time->Fraction / 10000.0;
+    PyDateTime_IMPORT;
+    PyObject *args = Py_BuildValue("(f)", seconds);
+    return PyDateTime_FromTimestamp(args);
+}
+
+
 static PySequenceMethods Packet_sequence_methods = {
     (lenfunc)Packet_len,
 };
@@ -215,6 +234,7 @@ static PyMethodDef Packet_methods[] = {
 static PyGetSetDef Packet_getset[] = {
     {"rtc", (getter)Packet_get_rtc, NULL, "10Mhz RTC clock"},
     {"ttb", (getter)Packet_get_ttb, NULL, "Time tag bits from 1553 CSDW"},
+    {"time", (getter)Packet_get_time, NULL, "Absolute time (time format 1)"},
     {NULL},
 };
 
