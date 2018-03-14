@@ -117,6 +117,10 @@ static PyObject *MS1553Msg_get_length(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->Length);
 }
 
+static PyObject *MS1553Msg_get_rtc(MS1553Msg *self, void *closure){
+    return Py_BuildValue("l", self->msg.IPH->Time);
+}
+
 static PyMemberDef MS1553Msg_members[] = {
     {"packet", T_OBJECT_EX, offsetof(MS1553Msg, packet), 0, "Parent C10 object"},
     {NULL}
@@ -130,6 +134,7 @@ static PyMethodDef MS1553Msg_methods[] = {
 
 
 static PyGetSetDef MS1553Msg_getset[] = {
+    {"rtc", (getter)MS1553Msg_get_rtc, NULL, "RTC from IPTS"},
     {"we", (getter)MS1553Msg_get_we, NULL, "Word error"},
     {"se", (getter)MS1553Msg_get_se, NULL, "Sync error"},
     {"le", (getter)MS1553Msg_get_wc, NULL, "Word count error"},
