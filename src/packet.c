@@ -150,38 +150,7 @@ static PyObject *Packet_bytes(Packet *self){
     int head_size = GetHeaderLength((I106C10Header *)&self->SyncPattern);
     char *buffer = malloc(self->PacketLength);
     memcpy(buffer, &self->SyncPattern, head_size);
-
-    // Track our last position and state so we can restore the file cursor if needed.
-    off_t offset;
-    I106FileState state = handles[self->parent->handle].File_State;
-    I106Status status;
-    if ((status = I106C10GetPos(self->parent->handle, &offset))){
-        PyErr_Format(PyExc_RuntimeError, "I106C10GetPos: %s", I106ErrorString(status));
-        return NULL;
-    }
-
-    if (offset != (self->offset + head_size)){
-        if ((status = I106C10SetPos(self->parent->handle, self->offset + head_size))){
-            PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
-            return NULL;
-        }
-
-        handles[self->parent->handle].File_State = I106_READ_DATA;
-    }
-
-    if ((status = I106C10ReadData(self->parent->handle, self->PacketLength - head_size, buffer + head_size))){
-        PyErr_Format(PyExc_RuntimeError, "I106C10ReadData: %s", I106ErrorString(status));
-        return NULL;
-    }
-
-    // Restore prior state if applicable.
-    if (offset != (self->offset + head_size)){
-        if ((status = I106C10SetPos(self->parent->handle, offset))){
-            PyErr_Format(PyExc_RuntimeError, "I106C10SetPos: %s", I106ErrorString(status));
-            return NULL;
-        }
-        handles[self->parent->handle].File_State = state;
-    }
+    memcpy(buffer + head_size, self->body, GetDataLength((I106C10Header *)&self->SyncPattern));
 
     PyObject *result = Py_BuildValue("y#", (char *)buffer, self->PacketLength);
     // free(buffer); // Shouldn't this cause a memory leak? Seems to work fine.
