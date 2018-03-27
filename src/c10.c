@@ -9,8 +9,7 @@
 
 
 static void C10_dealloc(C10 *self){
-    if (strcmp(self->filename, "<buffer>"))
-        I106C10Close(self->handle);
+    I106C10Close(self->handle);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
