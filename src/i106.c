@@ -6,6 +6,7 @@
 #include "c10.h"
 #include "packet.h"
 #include "1553.h"
+#include "video.h"
 
 
 static PyMethodDef funcs[] = {
@@ -21,6 +22,7 @@ PyMODINIT_FUNC PyInit_i106(void){
     add_c10_class(m);
     add_packet_class(m);
     add_1553_class(m);
+    add_video_class(m);
     return m;
 }
 

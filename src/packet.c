@@ -69,6 +69,14 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
 
     // Read Channel Specific Data Word (CSDW) and first message
     switch (self->DataType){
+        case I106CH10_DTYPE_VIDEO_FMT_0:
+            self->Video_MSG = malloc(sizeof(MS1553F1_Message));
+            if ((status = I106_Decode_FirstVideoF0(&header, self->body, self->Video_MSG))){
+                PyErr_Format(PyExc_RuntimeError, "I106DecodeFirstVideo: %s", I106ErrorString(status));
+                return -1;
+            }
+            break;
+
         case I106CH10_DTYPE_1553_FMT_1:
             self->MS1553_MSG = malloc(sizeof(MS1553F1_Message));
             if ((status = I106_Decode_First1553F1(&header, self->body, self->MS1553_MSG))){

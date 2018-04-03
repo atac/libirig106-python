@@ -4,6 +4,7 @@
 
 #include "libirig106/src/i106_decode_time.h"
 #include "libirig106/src/i106_decode_1553f1.h"
+#include "libirig106/src/i106_decode_video.h"
 
 typedef struct Packet {
     PyObject_HEAD
@@ -35,6 +36,9 @@ typedef struct Packet {
 
     // 1553
     MS1553F1_Message  *MS1553_MSG;
+
+    // Video
+    VideoF0_Message *Video_MSG;
 } Packet;
 
 static PyObject *Packet_test(PyObject *self);
