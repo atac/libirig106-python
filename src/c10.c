@@ -7,9 +7,11 @@
 #include "c10.h"
 #include "packet.h"
 
+static PyObject *C10_close(C10 *self);
 
 static void C10_dealloc(C10 *self){
-    I106C10Close(self->handle);
+    C10_close(self);
+    /* I106C10Close(self->handle); */
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -77,6 +79,12 @@ static PyObject *C10_tell(C10 *self){
 }
 
 
+static PyObject *C10_close(C10 *self){
+    I106C10Close(self->handle);
+    Py_RETURN_NONE;
+}
+
+
 static PyObject *C10_seek(C10 *self, PyObject *args, PyObject *kwargs){
     static char *keywords[] = {"whence", NULL};
     int64_t pos;
@@ -104,6 +112,7 @@ static PyMemberDef C10_members[] = {
 
 static PyMethodDef C10_methods[] = {
     {"tell", (PyCFunction)C10_tell, METH_NOARGS, "Find the current byte offset into the file."},
+    {"close", (PyCFunction)C10_close, METH_NOARGS, "Close the file handle"},
     {"seek", (PyCFunction)C10_seek, METH_VARARGS | METH_KEYWORDS, "Seek to a specific byte offset."},
     {NULL}  /* Sentinel */
 };
