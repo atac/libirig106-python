@@ -11,7 +11,6 @@ static PyObject *C10_close(C10 *self);
 
 static void C10_dealloc(C10 *self){
     C10_close(self);
-    /* I106C10Close(self->handle); */
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -22,6 +21,8 @@ static PyObject *C10_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
         self->handle = -1;
 
     self->filename = NULL;
+
+    Py_INCREF(self);
 
     return (PyObject *)self;
 }
@@ -45,7 +46,7 @@ static int C10_init(C10 *self, PyObject *args, PyObject *kwargs){
     else {
         self->filename = "<buffer>";
         if ((status = I106C10OpenBuffer(&self->handle, buffer.buf, buffer.len, READ))){
-            PyErr_Format(PyExc_RuntimeError, "I106C10OpenBuffer: %s", I106ErrorString(status)); //I106ErrorString(status));
+            PyErr_Format(PyExc_RuntimeError, "I106C10OpenBuffer: %s", I106ErrorString(status));
             return -1;
         }
     }
