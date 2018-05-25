@@ -92,7 +92,7 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
 
 static PyObject *Packet_get_rtc(Packet *self, void *closure){
     int64_t rtc = 0L;
-    memcpy(&rtc, &((Packet *)self)->RTC[0], 6);
+    memcpy(&rtc, &self->RTC[0], 6);
     return Py_BuildValue("l", rtc);
 }
 
