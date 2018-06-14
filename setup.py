@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 
+"""Initialize submodule and do install. Also adds clean command."""
+
 from distutils.cmd import Command
 from glob import glob
-from setuptools import setup, Extension
 from shutil import rmtree
 import os
 import sys
 
+from setuptools import setup, Extension
+
 
 class Clean(Command):
+    """Cleans build and dist directories."""
+
     description = 'clean build and dist directories'
     user_options = []
 
@@ -30,19 +35,26 @@ class Clean(Command):
                     os.remove(path)
 
 
+try:
+    if not os.listdir('src/libirig106'):
+        os.system('git submodule init && git submodule update')
+except Exception as err:
+    print(err)
+
+
 # Find source and header files.
-sources, headers = [], []
-sources += glob('src/*.c')
-headers += glob('src/*.h')
-sources += glob('src/libirig106/src/*.c')
-headers += glob('src/libirig106/src/*.h')
+SOURCES, HEADERS = [], []
+SOURCES += glob('src/*.c')
+HEADERS += glob('src/*.h')
+SOURCES += glob('src/libirig106/src/*.c')
+HEADERS += glob('src/libirig106/src/*.h')
 
 # Define flags based on platform.
-link_flags = []
+LINK_FLAGS = []
 if sys.platform == 'win32':
-    flags = ['/Od', '/EHsc', '/MT']
+    FLAGS = ['/Od', '/EHsc', '/MT']
 else:
-    flags = [
+    FLAGS = [
         '-c',
         '-std=c99',
         '-fPIC',
@@ -51,20 +63,20 @@ else:
         '-D_LARGEFILE64_SOURCE',
         '-ggdb',
     ]
-    link_flags = ['-fPIC']
+    LINK_FLAGS = ['-fPIC']
 
-ext = Extension(
+EXT = Extension(
     'i106',
-    sources,
-    depends=headers,
-    extra_compile_args=flags,
-    extra_link_args=link_flags,
+    SOURCES,
+    depends=HEADERS,
+    extra_compile_args=FLAGS,
+    extra_link_args=LINK_FLAGS,
 )
 
 setup(
     name='i106',
     version='0.0.1',
-    ext_modules=[ext],
+    ext_modules=[EXT],
     cmdclass={'clean': Clean},
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
