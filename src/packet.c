@@ -183,7 +183,7 @@ static PyMemberDef Packet_members[] = {
     {"data_length", T_UINT, offsetof(Packet, DataLength), 0, "Data Length (bytes)"},
     {"header_version", T_UBYTE, offsetof(Packet, HeaderVersion), 0, "Header version"},
     {"sequence_number", T_UBYTE, offsetof(Packet, SequenceNumber), 0, "Sequence number"},
-    {"packet_flags", T_UBYTE, offsetof(Packet, PacketFlags), 0, "Packet flags"},
+    {"flags", T_UBYTE, offsetof(Packet, PacketFlags), 0, "Packet flags"},
     {"data_type", T_UBYTE, offsetof(Packet, DataType), 0, "Data type"},
     {"checksum", T_USHORT, offsetof(Packet, Checksum), 0, "Header checksum"},
 
