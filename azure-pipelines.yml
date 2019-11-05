@@ -21,7 +21,11 @@ steps:
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
 
+- script: python setup.py install
+  displayName: 'Build'
+
 - script: python -m pip install -U pip pytest
+  displayName: 'Install test dependencies'
 
 - script: pytest --junitxml=test-results.xml
   displayName: 'Run tests'
