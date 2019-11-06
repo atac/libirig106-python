@@ -1,33 +1,24 @@
 
 strategy:
   matrix:
-    linux-py36:
+    ubuntu-py36:
       imageName: 'ubuntu-16.04'
       pythonVersion: '3.6'
-    linux-py37:
+    ubuntu-py37:
       imageName: 'ubuntu-16.04'
       pythonVersion: '3.7'
-    linux-py38:
-      imageName: 'ubuntu-16.04'
-      pythonVersion: '3.8'
-    mac-py36:
+    macos-py36:
       imageName: 'macos-10.13'
       pythonVersion: '3.6'
-    mac-py37:
+    macos-py37:
       imageName: 'macos-10.13'
       pythonVersion: '3.7'
-    mac-py38:
-      imageName: 'macos-10.13'
-      pythonVersion: '3.8'
     windows-py36:
       imageName: 'vs2017-win2016'
       pythonVersion: '3.6'
     windows-py37:
       imageName: 'vs2017-win2016'
       pythonVersion: '3.7'
-    windows-py38:
-      imageName: 'vs2017-win2016'
-      pythonVersion: '3.8'
 
 pool:
   vmImage: $(imageName)
