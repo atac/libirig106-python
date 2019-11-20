@@ -7,18 +7,27 @@ strategy:
     ubuntu-py37:
       imageName: 'ubuntu-16.04'
       pythonVersion: '3.7'
+    ubuntu-py38:
+      imageName: 'ubuntu-16.04'
+      pythonVersion: '3.8'
     macos-py36:
       imageName: 'macos-10.13'
       pythonVersion: '3.6'
     macos-py37:
       imageName: 'macos-10.13'
       pythonVersion: '3.7'
+    macos-py38:
+      imageName: 'macos-10.13'
+      pythonVersion: '3.8'
     windows-py36:
       imageName: 'vs2017-win2016'
       pythonVersion: '3.6'
     windows-py37:
       imageName: 'vs2017-win2016'
       pythonVersion: '3.7'
+    windows-py38:
+      imageName: 'vs2017-win2016'
+      pythonVersion: '3.8'
 
 pool:
   vmImage: $(imageName)
