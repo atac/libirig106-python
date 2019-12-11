@@ -4,6 +4,7 @@
 
 #include "libirig106/src/i106_decode_time.h"
 #include "libirig106/src/i106_decode_1553f1.h"
+#include "libirig106/src/i106_decode_ethernet.h"
 
 typedef struct Packet {
     PyObject_HEAD
@@ -34,7 +35,11 @@ typedef struct Packet {
     I106Time *I106Time;
 
     // 1553
-    MS1553F1_Message  *MS1553_MSG;
+    MS1553F1_Message *MS1553_MSG;
+
+    // Ethernet
+    EthernetF0_Message *Eth0_MSG;
+
 } Packet;
 
 static PyObject *Packet_test(PyObject *self);
