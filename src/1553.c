@@ -32,7 +32,7 @@ static int MS1553Msg_init(MS1553Msg *self, PyObject *args, PyObject *kwargs){
     }
 
     self->packet = (Packet *)tmp;
-    self->msg = *self->packet->MS1553_MSG;
+    self->msg = *(MS1553F1_Message *)self->packet->cur_msg;
     self->cur_word = 0;
     Py_INCREF(self->packet);
 

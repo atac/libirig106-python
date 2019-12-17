@@ -15,6 +15,8 @@
 
 static void Packet_dealloc(Packet *self){
     free(self->body);
+    free(self->first_msg);
+    free(self->cur_msg);
     Py_DECREF(self->parent);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
@@ -70,10 +72,12 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
     }
 
     // Read Channel Specific Data Word (CSDW) and first message
+    size_t msg_size = 0;
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
-            self->MS1553_MSG = malloc(sizeof(MS1553F1_Message));
-            if ((status = I106_Decode_First1553F1(&header, self->body, self->MS1553_MSG))){
+            msg_size = sizeof(MS1553F1_Message);
+            self->first_msg = malloc(msg_size);
+            if ((status = I106_Decode_First1553F1(&header, self->body, (MS1553F1_Message *)self->first_msg))){
                 PyErr_Format(PyExc_RuntimeError, "I106DecodeFirst1553: %s", I106ErrorString(status));
                 return -1;
             }
@@ -88,15 +92,18 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
             break;
 
         case I106CH10_DTYPE_ETHERNET_FMT_0:
-            self->first_msg = malloc(sizeof(EthernetF0_Message));
-            self->cur_msg = malloc(sizeof(EthernetF0_Message));
+            msg_size = sizeof(EthernetF0_Message);
+            self->first_msg = malloc(msg_size);
             if ((status = I106_Decode_FirstEthernetF0(&header, self->body, (EthernetF0_Message *)self->first_msg))){
                 PyErr_Format(PyExc_RuntimeError, "I106Decode_First_EthernetF0: %s", I106ErrorString(status));
                 return -1;
             }
-            memcpy(self->cur_msg, self->first_msg, sizeof(EthernetF0_Message));
             break;
+    }
 
+    if (msg_size){
+        self->cur_msg = malloc(msg_size);
+        memcpy(self->cur_msg, self->first_msg, msg_size);
     }
 
     return 0;
@@ -115,7 +122,7 @@ static Py_ssize_t Packet_len(Packet *self){
 
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
-            len = self->MS1553_MSG->CSDW->MessageCount;
+            len = ((MS1553F1_Message *)self->first_msg)->CSDW->MessageCount;
             break;
         case I106CH10_DTYPE_ETHERNET_FMT_0:
             len = ((EthernetF0_Message *)self->first_msg)->CSDW->Frames;
@@ -131,49 +138,40 @@ static Py_ssize_t Packet_len(Packet *self){
 // Iterate over packet messages (depending on data type)
 static PyObject *Packet_next(Packet *self){
     I106Status status;
-    PyObject *msg;
+    PyObject *msg = NULL;
+
+    if (self->cur_msg == NULL)
+        return NULL;
 
     switch (self->DataType){
+        
         case I106CH10_DTYPE_1553_FMT_1:
-            if (self->MS1553_MSG == NULL)
-                return NULL;
-
             msg = New_MS1553Msg((PyObject *)self);
-
-            if ((status = I106_Decode_Next1553F1(self->MS1553_MSG))){
-                if (status == I106_NO_MORE_DATA)
-                    self->MS1553_MSG = NULL;
-                else {
-                    PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
-                    break;
-                }
-            }
-            return msg;
+            status = I106_Decode_Next1553F1((MS1553F1_Message *)self->cur_msg);
+            break;
 
         case I106CH10_DTYPE_ETHERNET_FMT_0:
-            if (self->cur_msg == NULL)
-                return NULL;
-
             msg = New_EthernetF0Msg((PyObject *)self);
-
-            if ((status = I106_Decode_NextEthernetF0((EthernetF0_Message *)self->cur_msg))){
-                if (status == I106_NO_MORE_DATA)
-                    self->cur_msg = NULL;
-                else {
-                    PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
-                    break;
-                }
-            }
-            return msg;
-
+            status = I106_Decode_NextEthernetF0((EthernetF0_Message *)self->cur_msg);
+            break;
     }
 
-    return NULL;
+    // Handle any exceptions and raise StopIteration when we're out of data.
+    if (status == I106_NO_MORE_DATA){
+        free(self->cur_msg);
+        self->cur_msg = NULL;
+    }
+    else if (status) {
+        PyErr_Format(PyExc_RuntimeError, I106ErrorString(status));
+        return NULL;
+    }
+
+    return msg;
 }
 
 
 static PyObject *Packet_get_ttb(Packet *self){
-    return Py_BuildValue("i", self->MS1553_MSG->CSDW->TTB);
+    return Py_BuildValue("i", ((MS1553F1_Message *)self->first_msg)->CSDW->TTB);
 }
 
 

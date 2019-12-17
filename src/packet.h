@@ -34,10 +34,6 @@ typedef struct Packet {
     // Time
     I106Time *I106Time;
 
-    // 1553
-    MS1553F1_Message *MS1553_MSG;
-
-    // Ethernet
     void *first_msg;
     void *cur_msg;
 
