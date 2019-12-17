@@ -143,9 +143,10 @@ static PyObject *Packet_next(Packet *self){
             if ((status = I106_Decode_Next1553F1(self->MS1553_MSG))){
                 if (status == I106_NO_MORE_DATA)
                     self->MS1553_MSG = NULL;
-                else
+                else {
                     PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
-                break;
+                    break;
+                }
             }
             return msg;
 
@@ -158,9 +159,10 @@ static PyObject *Packet_next(Packet *self){
             if ((status = I106_Decode_NextEthernetF0((EthernetF0_Message *)self->cur_msg))){
                 if (status == I106_NO_MORE_DATA)
                     self->cur_msg = NULL;
-                else
+                else {
                     PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
-                break;
+                    break;
+                }
             }
             return msg;
 

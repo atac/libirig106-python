@@ -19,7 +19,7 @@ class Test1553:
     def test_iteration(self, p):
         for i, msg in enumerate(p):
             pass
-        assert i == 83
+        assert i == 84
 
     def test_len(self, p):
         assert len(p) == 85
