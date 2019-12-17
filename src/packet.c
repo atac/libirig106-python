@@ -88,11 +88,13 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
             break;
 
         case I106CH10_DTYPE_ETHERNET_FMT_0:
-            self->Eth0_MSG = malloc(sizeof(EthernetF0_Message));
-            if ((status = I106_Decode_FirstEthernetF0(&header, self->body, self->Eth0_MSG))){
+            self->first_msg = malloc(sizeof(EthernetF0_Message));
+            self->cur_msg = malloc(sizeof(EthernetF0_Message));
+            if ((status = I106_Decode_FirstEthernetF0(&header, self->body, (EthernetF0_Message *)self->first_msg))){
                 PyErr_Format(PyExc_RuntimeError, "I106Decode_First_EthernetF0: %s", I106ErrorString(status));
                 return -1;
             }
+            memcpy(self->cur_msg, self->first_msg, sizeof(EthernetF0_Message));
             break;
 
     }
@@ -116,7 +118,7 @@ static Py_ssize_t Packet_len(Packet *self){
             len = self->MS1553_MSG->CSDW->MessageCount;
             break;
         case I106CH10_DTYPE_ETHERNET_FMT_0:
-            len = self->Eth0_MSG->CSDW->Frames;
+            len = ((EthernetF0_Message *)self->first_msg)->CSDW->Frames;
             break;
         default:
             len = 0;
@@ -148,14 +150,14 @@ static PyObject *Packet_next(Packet *self){
             return msg;
 
         case I106CH10_DTYPE_ETHERNET_FMT_0:
-            if (self->Eth0_MSG == NULL)
+            if (self->cur_msg == NULL)
                 return NULL;
 
             msg = New_EthernetF0Msg((PyObject *)self);
 
-            if ((status = I106_Decode_NextEthernetF0(self->Eth0_MSG))){
+            if ((status = I106_Decode_NextEthernetF0((EthernetF0_Message *)self->cur_msg))){
                 if (status == I106_NO_MORE_DATA)
-                    self->Eth0_MSG = NULL;
+                    self->cur_msg = NULL;
                 else
                     PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
                 break;

@@ -38,7 +38,8 @@ typedef struct Packet {
     MS1553F1_Message *MS1553_MSG;
 
     // Ethernet
-    EthernetF0_Message *Eth0_MSG;
+    void *first_msg;
+    void *cur_msg;
 
 } Packet;
 

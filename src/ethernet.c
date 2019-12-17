@@ -32,7 +32,7 @@ static int EthernetMsg_init(EthernetMsg *self, PyObject *args, PyObject *kwargs)
     }
 
     self->packet = (Packet *)tmp;
-    self->msg = *self->packet->Eth0_MSG;
+    self->msg = *(EthernetF0_Message *)self->packet->cur_msg;
     self->cur_byte = 0;
     Py_INCREF(self->packet);
 
