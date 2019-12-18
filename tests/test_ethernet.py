@@ -17,33 +17,37 @@ class TestEthernet:
         for msg in p:
             return msg
 
+    # Packet level tests
+
     def test_iteration(self, p):
         assert len(list(p)) == len(p)
 
-    # def test_len(self, p):
-    #     assert len(p) == 85
+    def test_len(self, p):
+        assert len(p) == 1
 
-    # def test_ttb(self, p):
-    #     assert 1 == p.ttb
+    def test_format(self, p):
+        assert 0 == p.format
 
-    # def test_wordcount(self, msg):
-    #     assert len(msg) == 26
+    # Message level tests
 
-    # def test_word_iteration(self, msg):
-    #     for word in msg:
-    #         assert word == 8
-    #         return
+    def test_msg_len(self, msg):
+        assert len(msg) == 84
 
-    # def test_getitem(self, msg):
-    #     assert msg[2] == 65535
+    def test_msg_iteration(self, msg):
+        assert len(list(msg)) == len(msg)
 
-    # def test_getslice(self, msg):
-    #     assert msg[:3] == (8, 8903, 65535)
+    def test_getitem(self, msg):
+        assert msg[0], msg[3] == (3, 0)
 
-    # def test_bytes(self, msg):
-    #     first = bytes(msg)
-    #     if msg.bus:
-    #         msg.bus = 0
-    #     else:
-    #         msg.bus = 1
-    #     assert first != bytes(msg)
+    def test_getslice(self, msg):
+        assert msg[:3] == (3, 0, 0)
+
+    def test_netid(self, msg):
+        assert msg.network_id == 0
+        msg.network_id = 1
+        assert msg.network_id == 1
+
+    def test_bytes(self, msg):
+        first = bytes(msg)
+        msg.network_id = 1
+        assert first != bytes(msg)

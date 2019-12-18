@@ -197,6 +197,11 @@ static PyObject *Packet_get_time(Packet *self){
 }
 
 
+static PyObject *Packet_get_format(Packet *self){
+    return Py_BuildValue("i", ((EthernetF0_Message *)self->first_msg)->CSDW->Format);
+}
+
+
 static PySequenceMethods Packet_sequence_methods = {
     (lenfunc)Packet_len,
 };
@@ -231,8 +236,16 @@ static PyMethodDef Packet_methods[] = {
 
 static PyGetSetDef Packet_getset[] = {
     {"rtc", (getter)Packet_get_rtc, NULL, "10Mhz RTC clock"},
+
+    // Ethernet format 0
+    {"format", (getter)Packet_get_format, NULL, "Time tag bits from Ethernet format 0 CSDW"},
+
+    // 1553
     {"ttb", (getter)Packet_get_ttb, NULL, "Time tag bits from 1553 CSDW"},
+
+    // Time packets
     {"time", (getter)Packet_get_time, NULL, "Absolute time (time format 1)"},
+
     {NULL},
 };
 

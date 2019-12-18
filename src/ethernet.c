@@ -49,10 +49,10 @@ static PyObject *EthernetMsg_next(EthernetMsg *self){
     if (self->cur_byte >= self->msg.Length)
         return NULL;
 
-    uint8_t w = *(self->msg.Data + self->cur_byte);
-    PyObject *val = Py_BuildValue("i", w);
+    uint8_t b = *(self->msg.Data + self->cur_byte);
+    PyObject *value = Py_BuildValue("i", b);
     self->cur_byte += 1;
-    return val;
+    return value;
 }
 
 
@@ -67,18 +67,18 @@ static PyObject *EthernetMsg_bytes(EthernetMsg *self){
     return result;
 }
 
-/* static PyObject *EthernetMsg_get_bus(EthernetMsg *self, void *closure){ */
-/*     return Py_BuildValue("i", self->msg.IPH->BusID); */
-/* } */
+static PyObject *EthernetMsg_get_netid(EthernetMsg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->NetID);
+}
 
-/* int EthernetMsg_set_bus(EthernetMsg *self, PyObject *args, void *closure){ */
-/*     int val; */
-/*     if (!PyArg_Parse(args, "i", &val)) */
-/*         return -1; */
+int EthernetMsg_set_netid(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/*     self->msg.IPH->BusID = val; */
-/*     return 0; */
-/* } */
+    self->msg.IPH->NetID = value;
+    return 0;
+}
 
 static PyObject *EthernetMsg_get_length(EthernetMsg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->Length);
@@ -86,6 +86,10 @@ static PyObject *EthernetMsg_get_length(EthernetMsg *self, void *closure){
 
 static PyObject *EthernetMsg_get_rtc(EthernetMsg *self, void *closure){
     return Py_BuildValue("l", self->msg.IPH->IPTS);
+}
+
+static PyObject *EthernetMsg_get_speed(EthernetMsg *self, void *closure){
+    return Py_BuildValue("l", self->msg.IPH->Speed);
 }
 
 static PyMemberDef EthernetMsg_members[] = {
@@ -102,7 +106,8 @@ static PyMethodDef EthernetMsg_methods[] = {
 
 static PyGetSetDef EthernetMsg_getset[] = {
     {"rtc", (getter)EthernetMsg_get_rtc, NULL, "RTC from IPTS"},
-    /* {"bus", (getter)EthernetMsg_get_bus, (setter)EthernetMsg_set_bus, "Bus ID"}, */
+    {"speed", (getter)EthernetMsg_get_speed, NULL, "Bitrate for current Network ID"},
+    {"network_id", (getter)EthernetMsg_get_netid, (setter)EthernetMsg_set_netid, "Network ID"},
     {"length", (getter)EthernetMsg_get_length, NULL, "Length"},
     {NULL}
 };
