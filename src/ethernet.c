@@ -41,12 +41,12 @@ static int EthernetMsg_init(EthernetMsg *self, PyObject *args, PyObject *kwargs)
 
 
 static Py_ssize_t EthernetMsg_len(PyObject *self){
-    return (Py_ssize_t)((EthernetMsg *)self)->msg.Length;
+    return (Py_ssize_t)((EthernetMsg *)self)->msg.IPH->Length;
 }
 
 
 static PyObject *EthernetMsg_next(EthernetMsg *self){
-    if (self->cur_byte >= self->msg.Length)
+    if (self->cur_byte >= self->msg.IPH->Length)
         return NULL;
 
     uint8_t b = *(self->msg.Data + self->cur_byte);
@@ -84,12 +84,95 @@ static PyObject *EthernetMsg_get_length(EthernetMsg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->Length);
 }
 
+int EthernetMsg_set_length(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->Length = value;
+    return 0;
+}
+
+static PyObject *EthernetMsg_get_le(EthernetMsg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->LengthError);
+}
+
+int EthernetMsg_set_le(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->LengthError = value;
+    return 0;
+}
+
 static PyObject *EthernetMsg_get_rtc(EthernetMsg *self, void *closure){
     return Py_BuildValue("l", self->msg.IPH->IPTS);
 }
 
 static PyObject *EthernetMsg_get_speed(EthernetMsg *self, void *closure){
     return Py_BuildValue("l", self->msg.IPH->Speed);
+}
+
+int EthernetMsg_set_speed(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->Speed = value;
+    return 0;
+}
+
+static PyObject *EthernetMsg_get_fce(EthernetMsg *self, void *closure){
+    return Py_BuildValue("l", self->msg.IPH->FrameCRCError);
+}
+
+int EthernetMsg_set_fce(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->FrameCRCError = value;
+    return 0;
+}
+
+static PyObject *EthernetMsg_get_content(EthernetMsg *self, void *closure){
+    return Py_BuildValue("l", self->msg.IPH->Content);
+}
+
+int EthernetMsg_set_content(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->Content = value;
+    return 0;
+}
+
+static PyObject *EthernetMsg_get_fe(EthernetMsg *self, void *closure){
+    return Py_BuildValue("l", self->msg.IPH->FrameError);
+}
+
+int EthernetMsg_set_fe(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->FrameError = value;
+    return 0;
+}
+
+static PyObject *EthernetMsg_get_dce(EthernetMsg *self, void *closure){
+    return Py_BuildValue("l", self->msg.IPH->DataCRCError);
+}
+
+int EthernetMsg_set_dce(EthernetMsg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->DataCRCError = value;
+    return 0;
 }
 
 static PyMemberDef EthernetMsg_members[] = {
@@ -105,10 +188,16 @@ static PyMethodDef EthernetMsg_methods[] = {
 
 
 static PyGetSetDef EthernetMsg_getset[] = {
+    // TODO: some way to set RTC
     {"rtc", (getter)EthernetMsg_get_rtc, NULL, "RTC from IPTS"},
-    {"speed", (getter)EthernetMsg_get_speed, NULL, "Bitrate for current Network ID"},
-    {"network_id", (getter)EthernetMsg_get_netid, (setter)EthernetMsg_set_netid, "Network ID"},
-    {"length", (getter)EthernetMsg_get_length, NULL, "Length"},
+    {"length", (getter)EthernetMsg_get_length, (setter)EthernetMsg_set_length, "Length"},
+    {"le", (getter)EthernetMsg_get_le, (setter)EthernetMsg_set_le, "Length error flag"},
+    {"dce", (getter)EthernetMsg_get_dce, (setter)EthernetMsg_set_dce, "Data CRC error flag"},
+    {"netid", (getter)EthernetMsg_get_netid, (setter)EthernetMsg_set_netid, "Network ID"},
+    {"speed", (getter)EthernetMsg_get_speed, (setter)EthernetMsg_set_speed, "Bitrate for current Network ID"},
+    {"content", (getter)EthernetMsg_get_content, (setter)EthernetMsg_set_content, "Content indicator"},
+    {"fe", (getter)EthernetMsg_get_fe, (setter)EthernetMsg_set_fe, "Frame Error flag"},
+    {"fce", (getter)EthernetMsg_get_fce, (setter)EthernetMsg_set_fce, "Frame CRC Error flag"},
     {NULL}
 };
 
