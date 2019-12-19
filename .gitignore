@@ -6,3 +6,4 @@ build
 .eggs
 .pytest_cache
 *.so
+*.pyd
