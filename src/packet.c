@@ -70,41 +70,39 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
 
     // Read Channel Specific Data Word (CSDW) and first message
     size_t msg_size = 0;
+    char *type_name;
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
             msg_size = sizeof(MS1553F1_Message);
             self->first_msg = malloc(msg_size);
-            if ((status = I106_Decode_First1553F1(&header, self->body, (MS1553F1_Message *)self->first_msg))){
-                PyErr_Format(PyExc_RuntimeError, "I106DecodeFirst1553: %s", I106ErrorString(status));
-                return -1;
-            }
+            type_name = "FirstMS1553F1";
+            status = I106_Decode_First1553F1(&header, self->body, (MS1553F1_Message *)self->first_msg);
             break;
 
         case I106CH10_DTYPE_IRIG_TIME:
             self->I106Time = malloc(sizeof(I106Time));
-            if ((status = I106_Decode_TimeF1(&header, self->body, self->I106Time))){
-                PyErr_Format(PyExc_RuntimeError, "I106Decode_TimeF1: %s", I106ErrorString(status));
-                return -1;
-            }
+            type_name = "TimeF1";
+            status = I106_Decode_TimeF1(&header, self->body, self->I106Time);
             break;
 
         case I106CH10_DTYPE_ETHERNET_FMT_0:
             msg_size = sizeof(EthernetF0_Message);
             self->first_msg = malloc(msg_size);
-            if ((status = I106_Decode_FirstEthernetF0(&header, self->body, (EthernetF0_Message *)self->first_msg))){
-                PyErr_Format(PyExc_RuntimeError, "I106Decode_First_EthernetF0: %s", I106ErrorString(status));
-                return -1;
-            }
+            type_name = "FirstEthernetF0";
+            status = I106_Decode_FirstEthernetF0(&header, self->body, (EthernetF0_Message *)self->first_msg);
             break;
 
         case I106CH10_DTYPE_ARINC_429_FMT_0:
             msg_size = sizeof(Arinc429F0_Message);
             self->first_msg = malloc(msg_size);
-            if ((status = I106_Decode_FirstArinc429F0(&header, self->body, (Arinc429F0_Message *)self->first_msg))){
-                PyErr_Format(PyExc_RuntimeError, "I106Decode_First_Arinc429F0: %s", I106ErrorString(status));
-                return -1;
-            }
+            type_name = "FirstArinc429F0";
+            status = I106_Decode_FirstArinc429F0(&header, self->body, (Arinc429F0_Message *)self->first_msg);
             break;
+    }
+
+    if (status != I106_OK){
+        PyErr_Format(PyExc_RuntimeError, "I106_Decode_%s: %s", type_name, I106ErrorString(status));
+        return -1;
     }
 
     if (msg_size){
