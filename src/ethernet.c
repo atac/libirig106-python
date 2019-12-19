@@ -2,9 +2,6 @@
 #include <Python.h>
 #include "structmember.h"
 
-#include "libirig106/src/irig106ch10.h"
-#include "libirig106/src/i106_decode_ethernet.h"
-
 #include "c10.h"
 #include "ethernet.h"
 

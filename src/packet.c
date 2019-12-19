@@ -3,14 +3,11 @@
 #include "datetime.h"
 #include "structmember.h"
 
-#include "libirig106/src/irig106ch10.h"
-#include "libirig106/src/i106_decode_1553f1.h"
-#include "libirig106/src/i106_decode_ethernet.h"
-
 #include "c10.h"
 #include "1553.h"
 #include "ethernet.h"
 #include "packet.h"
+#include "arinc429.h"
 
 
 static void Packet_dealloc(Packet *self){
@@ -99,6 +96,15 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
                 return -1;
             }
             break;
+
+        case I106CH10_DTYPE_ARINC_429_FMT_0:
+            msg_size = sizeof(Arinc429F0_Message);
+            self->first_msg = malloc(msg_size);
+            if ((status = I106_Decode_FirstArinc429F0(&header, self->body, (Arinc429F0_Message *)self->first_msg))){
+                PyErr_Format(PyExc_RuntimeError, "I106Decode_First_Arinc429F0: %s", I106ErrorString(status));
+                return -1;
+            }
+            break;
     }
 
     if (msg_size){
@@ -127,6 +133,9 @@ static Py_ssize_t Packet_len(Packet *self){
         case I106CH10_DTYPE_ETHERNET_FMT_0:
             len = ((EthernetF0_Message *)self->first_msg)->CSDW->Frames;
             break;
+        case I106CH10_DTYPE_ARINC_429_FMT_0:
+            len = ((Arinc429F0_Message *)self->first_msg)->CSDW->Count;
+            break;
         default:
             len = 0;
     }
@@ -153,6 +162,11 @@ static PyObject *Packet_next(Packet *self){
         case I106CH10_DTYPE_ETHERNET_FMT_0:
             msg = New_EthernetF0Msg((PyObject *)self);
             status = I106_Decode_NextEthernetF0((EthernetF0_Message *)self->cur_msg);
+            break;
+
+        case I106CH10_DTYPE_ARINC_429_FMT_0:
+            msg = New_Arinc429F0Msg((PyObject *)self);
+            status = I106_Decode_NextArinc429F0((Arinc429F0_Message *)self->cur_msg);
             break;
     }
 

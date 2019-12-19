@@ -2,9 +2,6 @@
 #include <Python.h>
 #include "structmember.h"
 
-#include "libirig106/src/irig106ch10.h"
-#include "libirig106/src/i106_decode_1553f1.h"
-
 #include "c10.h"
 #include "1553.h"
 

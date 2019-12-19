@@ -1,5 +1,6 @@
 
 #include "packet.h"
+#include "libirig106/src/i106_decode_ethernet.h"
 
 
 typedef struct EthernetF0_Msg {
