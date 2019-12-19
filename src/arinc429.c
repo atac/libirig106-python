@@ -48,100 +48,135 @@ static PyObject *Arinc429Msg_bytes(Arinc429Msg *self){
     return result;
 }
 
-/* static PyObject *Arinc429Msg_get_length(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("i", self->msg.IPH->Length); */
-/* } */
+static PyObject *Arinc429Msg_get_gap(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->GapTime);
+}
 
-/* int Arinc429Msg_set_length(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+int Arinc429Msg_set_gap(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/*     self->msg.IPH->Length = value; */
-/*     return 0; */
-/* } */
+    self->msg.IPH->GapTime = value;
+    return 0;
+}
 
-/* static PyObject *Arinc429Msg_get_le(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("i", self->msg.IPH->LengthError); */
-/* } */
+static PyObject *Arinc429Msg_get_speed(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->BusSpeed);
+}
 
-/* int Arinc429Msg_set_le(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+int Arinc429Msg_set_speed(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/*     self->msg.IPH->LengthError = value; */
-/*     return 0; */
-/* } */
+    self->msg.IPH->BusSpeed = value;
+    return 0;
+}
 
-/* static PyObject *Arinc429Msg_get_rtc(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("l", self->msg.IPH->IPTS); */
-/* } */
+static PyObject *Arinc429Msg_get_pe(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->ParityError);
+}
 
-/* static PyObject *Arinc429Msg_get_speed(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("l", self->msg.IPH->Speed); */
-/* } */
+int Arinc429Msg_set_pe(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/* int Arinc429Msg_set_speed(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+    self->msg.IPH->ParityError = value;
+    return 0;
+}
 
-/*     self->msg.IPH->Speed = value; */
-/*     return 0; */
-/* } */
+static PyObject *Arinc429Msg_get_fe(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->FormatError);
+}
 
-/* static PyObject *Arinc429Msg_get_fce(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("l", self->msg.IPH->FrameCRCError); */
-/* } */
+int Arinc429Msg_set_fe(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/* int Arinc429Msg_set_fce(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+    self->msg.IPH->FormatError = value;
+    return 0;
+}
 
-/*     self->msg.IPH->FrameCRCError = value; */
-/*     return 0; */
-/* } */
+static PyObject *Arinc429Msg_get_bus(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.IPH->BusNumber);
+}
 
-/* static PyObject *Arinc429Msg_get_content(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("l", self->msg.IPH->Content); */
-/* } */
+int Arinc429Msg_set_bus(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/* int Arinc429Msg_set_content(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+    self->msg.IPH->BusNumber = value;
+    return 0;
+}
 
-/*     self->msg.IPH->Content = value; */
-/*     return 0; */
-/* } */
+static PyObject *Arinc429Msg_get_label(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.Data->Label);
+}
 
-/* static PyObject *Arinc429Msg_get_fe(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("l", self->msg.IPH->FrameError); */
-/* } */
+int Arinc429Msg_set_label(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/* int Arinc429Msg_set_fe(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+    self->msg.Data->Label = value;
+    return 0;
+}
 
-/*     self->msg.IPH->FrameError = value; */
-/*     return 0; */
-/* } */
+static PyObject *Arinc429Msg_get_sdi(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.Data->SDI);
+}
 
-/* static PyObject *Arinc429Msg_get_dce(Arinc429Msg *self, void *closure){ */
-/*     return Py_BuildValue("l", self->msg.IPH->DataCRCError); */
-/* } */
+int Arinc429Msg_set_sdi(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
 
-/* int Arinc429Msg_set_dce(Arinc429Msg *self, PyObject *args, void *closure){ */
-/*     int value; */
-/*     if (!PyArg_Parse(args, "i", &value)) */
-/*         return -1; */
+    self->msg.Data->SDI = value;
+    return 0;
+}
 
-/*     self->msg.IPH->DataCRCError = value; */
-/*     return 0; */
-/* } */
+static PyObject *Arinc429Msg_get_data(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.Data->Data);
+}
+
+int Arinc429Msg_set_data(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.Data->Data = value;
+    return 0;
+}
+
+static PyObject *Arinc429Msg_get_ssm(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.Data->SSM);
+}
+
+int Arinc429Msg_set_ssm(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.Data->SSM = value;
+    return 0;
+}
+
+static PyObject *Arinc429Msg_get_parity(Arinc429Msg *self, void *closure){
+    return Py_BuildValue("i", self->msg.Data->Parity);
+}
+
+int Arinc429Msg_set_parity(Arinc429Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.Data->Parity = value;
+    return 0;
+}
 
 static PyMemberDef Arinc429Msg_members[] = {
     {"packet", T_OBJECT_EX, offsetof(Arinc429Msg, packet), 0, "Parent C10 object"},
@@ -156,8 +191,16 @@ static PyMethodDef Arinc429Msg_methods[] = {
 
 
 static PyGetSetDef Arinc429Msg_getset[] = {
-    // TODO: some way to set RTC
-    /* {"rtc", (getter)Arinc429Msg_get_rtc, NULL, "RTC from IPTS"}, */
+    {"gap", (getter)Arinc429Msg_get_gap, (setter)Arinc429Msg_set_gap, "Gap time"},
+    {"speed", (getter)Arinc429Msg_get_speed, (setter)Arinc429Msg_set_speed, "Bus speed"},
+    {"pe", (getter)Arinc429Msg_get_pe, (setter)Arinc429Msg_set_pe, "Parity error flag"},
+    {"fe", (getter)Arinc429Msg_get_fe, (setter)Arinc429Msg_set_fe, "Format error flag"},
+    {"bus", (getter)Arinc429Msg_get_bus, (setter)Arinc429Msg_set_bus, "Bus number"},
+    {"label", (getter)Arinc429Msg_get_label, (setter)Arinc429Msg_set_label, "Arinc label"},
+    {"sdi", (getter)Arinc429Msg_get_sdi, (setter)Arinc429Msg_set_sdi, "Source/Destination Identifier"},
+    {"data", (getter)Arinc429Msg_get_data, (setter)Arinc429Msg_set_data, "Message data"},
+    {"ssm", (getter)Arinc429Msg_get_ssm, (setter)Arinc429Msg_set_ssm, "Sign/Status matrix"},
+    {"parity", (getter)Arinc429Msg_get_parity, (setter)Arinc429Msg_set_parity, "Parity bit"},
     {NULL}
 };
 
