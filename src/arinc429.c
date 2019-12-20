@@ -38,7 +38,7 @@ static int Arinc429Msg_init(Arinc429Msg *self, PyObject *args, PyObject *kwargs)
 
 
 static PyObject *Arinc429Msg_bytes(Arinc429Msg *self){
-    int buf_size = sizeof(Arinc429F0_IPH) * 2;
+    int buf_size = sizeof(Arinc429F0_IPH) + sizeof(Arinc429F0_Data);
     void *buffer = malloc(buf_size);
     memcpy(buffer, self->msg.IPH, buf_size);
 

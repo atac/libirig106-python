@@ -27,10 +27,10 @@ class TestArinc:
 
     # Message level tests
 
-    # def test_bytes(self, msg):
-    #     before = bytes(msg)
-    #     msg.netid = 1
-    #     assert before != bytes(msg)
+    def test_bytes(self, msg):
+        before = bytes(msg)
+        msg.speed = 2
+        assert before != bytes(msg)
 
     @pytest.mark.parametrize('attr,expected', [
         ('gap', 0),
