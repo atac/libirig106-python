@@ -8,6 +8,7 @@
 #include "ethernet.h"
 #include "packet.h"
 #include "arinc429.h"
+#include "can.h"
 
 
 static void Packet_dealloc(Packet *self){
@@ -98,6 +99,13 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
             type_name = "FirstArinc429F0";
             status = I106_Decode_FirstArinc429F0(&header, self->body, (Arinc429F0_Message *)self->first_msg);
             break;
+
+        case I106CH10_DTYPE_CAN:
+            msg_size = sizeof(CAN_Message);
+            self->first_msg = malloc(msg_size);
+            type_name = "FirstCAN";
+            status = I106_Decode_FirstCAN(&header, self->body, (CAN_Message *)self->first_msg);
+            break;
     }
 
     if (status != I106_OK){
@@ -134,6 +142,9 @@ static Py_ssize_t Packet_len(Packet *self){
         case I106CH10_DTYPE_ARINC_429_FMT_0:
             len = ((Arinc429F0_Message *)self->first_msg)->CSDW->Count;
             break;
+        case I106CH10_DTYPE_CAN:
+            len = ((CAN_Message *)self->first_msg)->CSDW->Count;
+            break;
         default:
             len = 0;
     }
@@ -165,6 +176,11 @@ static PyObject *Packet_next(Packet *self){
         case I106CH10_DTYPE_ARINC_429_FMT_0:
             msg = New_Arinc429F0Msg((PyObject *)self);
             status = I106_Decode_NextArinc429F0((Arinc429F0_Message *)self->cur_msg);
+            break;
+
+        case I106CH10_DTYPE_CAN:
+            msg = New_CANMsg((PyObject *)self);
+            status = I106_Decode_NextCAN((CAN_Message *)self->cur_msg);
             break;
     }
 

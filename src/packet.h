@@ -3,8 +3,6 @@
 #define packet_header
 
 #include "libirig106/src/i106_decode_time.h"
-#include "libirig106/src/i106_decode_1553f1.h"
-#include "libirig106/src/i106_decode_ethernet.h"
 
 typedef struct Packet {
     PyObject_HEAD
