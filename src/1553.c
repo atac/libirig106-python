@@ -72,28 +72,91 @@ static PyObject *MS1553Msg_get_we(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->WordError);
 }
 
+int MS1553Msg_set_we(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->WordError = value;
+    return 0;
+}
+
 static PyObject *MS1553Msg_get_se(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->SyncError);
+}
+
+int MS1553Msg_set_se(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->SyncError = value;
+    return 0;
 }
 
 static PyObject *MS1553Msg_get_wc(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->WordCountError);
 }
 
+int MS1553Msg_set_wc(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->WordCountError = value;
+    return 0;
+}
+
 static PyObject *MS1553Msg_get_timeout(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->Timeout);
+}
+
+int MS1553Msg_set_timeout(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->Timeout = value;
+    return 0;
 }
 
 static PyObject *MS1553Msg_get_fe(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->FormatError);
 }
 
+int MS1553Msg_set_fe(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->FormatError = value;
+    return 0;
+}
+
 static PyObject *MS1553Msg_get_rt2rt(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->RT2RT);
 }
 
+int MS1553Msg_set_rt2rt(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->RT2RT = value;
+    return 0;
+}
+
 static PyObject *MS1553Msg_get_me(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->MessageError);
+}
+
+int MS1553Msg_set_me(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->MessageError = value;
+    return 0;
 }
 
 static PyObject *MS1553Msg_get_bus(MS1553Msg *self, void *closure){
@@ -113,8 +176,26 @@ static PyObject *MS1553Msg_get_gap(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->GapTime1);
 }
 
+int MS1553Msg_set_gap(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->GapTime1 = value;
+    return 0;
+}
+
 static PyObject *MS1553Msg_get_length(MS1553Msg *self, void *closure){
     return Py_BuildValue("i", self->msg.IPH->Length);
+}
+
+int MS1553Msg_set_length(MS1553Msg *self, PyObject *args, void *closure){
+    int value;
+    if (!PyArg_Parse(args, "i", &value))
+        return -1;
+
+    self->msg.IPH->Length = value;
+    return 0;
 }
 
 static PyObject *MS1553Msg_get_rtc(MS1553Msg *self, void *closure){
@@ -135,16 +216,16 @@ static PyMethodDef MS1553Msg_methods[] = {
 
 static PyGetSetDef MS1553Msg_getset[] = {
     {"rtc", (getter)MS1553Msg_get_rtc, NULL, "RTC from IPTS"},
-    {"we", (getter)MS1553Msg_get_we, NULL, "Word error"},
-    {"se", (getter)MS1553Msg_get_se, NULL, "Sync error"},
-    {"le", (getter)MS1553Msg_get_wc, NULL, "Word count error"},
-    {"timeout", (getter)MS1553Msg_get_timeout, NULL, "Timeout"},
-    {"fe", (getter)MS1553Msg_get_fe, NULL, "Format error"},
-    {"rt2rt", (getter)MS1553Msg_get_rt2rt, NULL, "RT to RT flag"},
-    {"me", (getter)MS1553Msg_get_me, NULL, "Message error"},
+    {"we", (getter)MS1553Msg_get_we, (setter)MS1553Msg_set_we, "Word error"},
+    {"se", (getter)MS1553Msg_get_se, (setter)MS1553Msg_set_se, "Sync error"},
+    {"le", (getter)MS1553Msg_get_wc, (setter)MS1553Msg_set_wc, "Word count error"},
+    {"timeout", (getter)MS1553Msg_get_timeout, (setter)MS1553Msg_set_timeout, "Timeout"},
+    {"fe", (getter)MS1553Msg_get_fe, (setter)MS1553Msg_set_fe, "Format error"},
+    {"rt2rt", (getter)MS1553Msg_get_rt2rt, (setter)MS1553Msg_set_rt2rt, "RT to RT flag"},
+    {"me", (getter)MS1553Msg_get_me, (setter)MS1553Msg_set_me, "Message error"},
     {"bus", (getter)MS1553Msg_get_bus, (setter)MS1553Msg_set_bus, "Bus ID"},
-    {"gap_time", (getter)MS1553Msg_get_gap, NULL, "Gap time"},
-    {"length", (getter)MS1553Msg_get_length, NULL, "Length"},
+    {"gap_time", (getter)MS1553Msg_get_gap, (setter)MS1553Msg_set_gap, "Gap time"},
+    {"length", (getter)MS1553Msg_get_length, (setter)MS1553Msg_set_length, "Length"},
     {NULL}
 };
 
