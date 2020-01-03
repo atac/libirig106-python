@@ -2,9 +2,6 @@
 #include <Python.h>
 #include "structmember.h"
 
-#include "libirig106/src/irig106ch10.h"
-#include "libirig106/src/i106_decode_video.h"
-
 #include "c10.h"
 #include "video.h"
 
@@ -32,7 +29,7 @@ static int VideoMsg_init(VideoMsg *self, PyObject *args, PyObject *kwargs){
     }
 
     self->packet = (Packet *)tmp;
-    self->msg = *self->packet->Video_MSG;
+    self->msg = *(VideoF0_Message *)self->packet->cur_msg;
     Py_INCREF(self->packet);
 
     return 0;
@@ -174,7 +171,7 @@ PyObject *New_VideoMsg(PyObject *parent){
 }
 
 
-void add_1553_class(PyObject *module){
+void add_video_class(PyObject *module){
 	if (PyType_Ready(&VideoMsg_Type) < 0)
         return;
 

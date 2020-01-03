@@ -16,10 +16,11 @@ class Test1553:
         for msg in p:
             return msg
 
+    # Packet level
     def test_iteration(self, p):
         for i, msg in enumerate(p):
             pass
-        assert i == 83
+        assert i == 84
 
     def test_len(self, p):
         assert len(p) == 85
@@ -27,6 +28,7 @@ class Test1553:
     def test_ttb(self, p):
         assert 1 == p.ttb
 
+    # Message level
     def test_wordcount(self, msg):
         assert len(msg) == 26
 
@@ -48,3 +50,20 @@ class Test1553:
         else:
             msg.bus = 1
         assert first != bytes(msg)
+
+    @pytest.mark.parametrize('attr,expected', [
+        ('we', 0),
+        ('se', 0),
+        ('le', 0),
+        ('timeout', 0),
+        ('fe', 0),
+        ('rt2rt', 0),
+        ('me', 0),
+        ('bus', 0),
+        ('gap_time', 65),
+        ('length', 56),
+    ])
+    def test_attrs(self, msg, attr, expected):
+        assert getattr(msg, attr) == expected
+        setattr(msg, attr, 1)
+        assert getattr(msg, attr) == 1

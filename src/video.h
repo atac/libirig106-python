@@ -1,5 +1,6 @@
 
 #include "packet.h"
+#include "libirig106/src/i106_decode_video.h"
 
 
 typedef struct VideoMsg {

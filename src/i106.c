@@ -7,6 +7,8 @@
 #include "packet.h"
 #include "1553.h"
 #include "video.h"
+#include "ethernet.h"
+#include "arinc429.h"
 
 
 static PyMethodDef funcs[] = {
@@ -23,6 +25,8 @@ PyMODINIT_FUNC PyInit_i106(void){
     add_packet_class(m);
     add_1553_class(m);
     add_video_class(m);
+    add_ethernet_class(m);
+    add_arinc_class(m);
     return m;
 }
 

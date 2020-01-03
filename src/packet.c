@@ -3,16 +3,18 @@
 #include "datetime.h"
 #include "structmember.h"
 
-#include "libirig106/src/irig106ch10.h"
-#include "libirig106/src/i106_decode_1553f1.h"
-
 #include "c10.h"
 #include "1553.h"
+#include "ethernet.h"
 #include "packet.h"
+#include "arinc429.h"
+#include "video.h"
 
 
 static void Packet_dealloc(Packet *self){
     free(self->body);
+    free(self->first_msg);
+    free(self->cur_msg);
     Py_DECREF(self->parent);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
@@ -68,30 +70,53 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
     }
 
     // Read Channel Specific Data Word (CSDW) and first message
+    size_t msg_size = 0;
+    char *type_name;
     switch (self->DataType){
         case I106CH10_DTYPE_VIDEO_FMT_0:
-            self->Video_MSG = malloc(sizeof(MS1553F1_Message));
-            if ((status = I106_Decode_FirstVideoF0(&header, self->body, self->Video_MSG))){
+            self->first_msg = malloc(sizeof(VideoF0_Message));
+            if ((status = I106_Decode_FirstVideoF0(&header, self->body, (VideoF0_Message *)self->first_msg))){
                 PyErr_Format(PyExc_RuntimeError, "I106DecodeFirstVideo: %s", I106ErrorString(status));
                 return -1;
             }
             break;
 
         case I106CH10_DTYPE_1553_FMT_1:
-            self->MS1553_MSG = malloc(sizeof(MS1553F1_Message));
-            if ((status = I106_Decode_First1553F1(&header, self->body, self->MS1553_MSG))){
-                PyErr_Format(PyExc_RuntimeError, "I106DecodeFirst1553: %s", I106ErrorString(status));
-                return -1;
-            }
+            msg_size = sizeof(MS1553F1_Message);
+            self->first_msg = malloc(msg_size);
+            type_name = "FirstMS1553F1";
+            status = I106_Decode_First1553F1(&header, self->body, (MS1553F1_Message *)self->first_msg);
             break;
 
         case I106CH10_DTYPE_IRIG_TIME:
             self->I106Time = malloc(sizeof(I106Time));
-            if ((status = I106_Decode_TimeF1(&header, self->body, self->I106Time))){
-                PyErr_Format(PyExc_RuntimeError, "I106Decode_TimeF1: %s", I106ErrorString(status));
-                return -1;
-            }
+            type_name = "TimeF1";
+            status = I106_Decode_TimeF1(&header, self->body, self->I106Time);
             break;
+
+        case I106CH10_DTYPE_ETHERNET_FMT_0:
+            msg_size = sizeof(EthernetF0_Message);
+            self->first_msg = malloc(msg_size);
+            type_name = "FirstEthernetF0";
+            status = I106_Decode_FirstEthernetF0(&header, self->body, (EthernetF0_Message *)self->first_msg);
+            break;
+
+        case I106CH10_DTYPE_ARINC_429_FMT_0:
+            msg_size = sizeof(Arinc429F0_Message);
+            self->first_msg = malloc(msg_size);
+            type_name = "FirstArinc429F0";
+            status = I106_Decode_FirstArinc429F0(&header, self->body, (Arinc429F0_Message *)self->first_msg);
+            break;
+    }
+
+    if (status != I106_OK){
+        PyErr_Format(PyExc_RuntimeError, "I106_Decode_%s: %s", type_name, I106ErrorString(status));
+        return -1;
+    }
+
+    if (msg_size){
+        self->cur_msg = malloc(msg_size);
+        memcpy(self->cur_msg, self->first_msg, msg_size);
     }
 
     return 0;
@@ -100,7 +125,7 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
 
 static PyObject *Packet_get_rtc(Packet *self, void *closure){
     int64_t rtc = 0L;
-    memcpy(&rtc, &((Packet *)self)->RTC[0], 6);
+    memcpy(&rtc, &self->RTC[0], 6);
     return Py_BuildValue("l", rtc);
 }
 
@@ -110,7 +135,13 @@ static Py_ssize_t Packet_len(Packet *self){
 
     switch (self->DataType){
         case I106CH10_DTYPE_1553_FMT_1:
-            len = self->MS1553_MSG->CSDW->MessageCount;
+            len = ((MS1553F1_Message *)self->first_msg)->CSDW->MessageCount;
+            break;
+        case I106CH10_DTYPE_ETHERNET_FMT_0:
+            len = ((EthernetF0_Message *)self->first_msg)->CSDW->Frames;
+            break;
+        case I106CH10_DTYPE_ARINC_429_FMT_0:
+            len = ((Arinc429F0_Message *)self->first_msg)->CSDW->Count;
             break;
         default:
             len = 0;
@@ -123,34 +154,45 @@ static Py_ssize_t Packet_len(Packet *self){
 // Iterate over packet messages (depending on data type)
 static PyObject *Packet_next(Packet *self){
     I106Status status;
-    MS1553F1_Message *msg1553 = malloc(sizeof(MS1553F1_Message));
-    PyObject *msg;
+    PyObject *msg = NULL;
+
+    if (self->cur_msg == NULL)
+        return NULL;
 
     switch (self->DataType){
+        
         case I106CH10_DTYPE_1553_FMT_1:
-            if (self->MS1553_MSG == NULL){
-                PyErr_Format(PyExc_StopIteration, "No more data");
-                break;
-            }
-
             msg = New_MS1553Msg((PyObject *)self);
+            status = I106_Decode_Next1553F1((MS1553F1_Message *)self->cur_msg);
+            break;
 
-            if ((status = I106_Decode_Next1553F1(self->MS1553_MSG))){
-                if (status == I106_NO_MORE_DATA)
-                    self->MS1553_MSG = NULL;
-                else
-                    PyErr_Format(PyExc_RuntimeError, "Decode_Next1553F1: %s", I106ErrorString(status));
-                break;
-            }
-            return msg;
+        case I106CH10_DTYPE_ETHERNET_FMT_0:
+            msg = New_EthernetF0Msg((PyObject *)self);
+            status = I106_Decode_NextEthernetF0((EthernetF0_Message *)self->cur_msg);
+            break;
+
+        case I106CH10_DTYPE_ARINC_429_FMT_0:
+            msg = New_Arinc429F0Msg((PyObject *)self);
+            status = I106_Decode_NextArinc429F0((Arinc429F0_Message *)self->cur_msg);
+            break;
     }
 
-    return NULL;
+    // Handle any exceptions and raise StopIteration when we're out of data.
+    if (status == I106_NO_MORE_DATA){
+        free(self->cur_msg);
+        self->cur_msg = NULL;
+    }
+    else if (status) {
+        PyErr_Format(PyExc_RuntimeError, I106ErrorString(status));
+        return NULL;
+    }
+
+    return msg;
 }
 
 
 static PyObject *Packet_get_ttb(Packet *self){
-    return Py_BuildValue("i", self->MS1553_MSG->CSDW->TTB);
+    return Py_BuildValue("i", ((MS1553F1_Message *)self->first_msg)->CSDW->TTB);
 }
 
 
@@ -176,6 +218,11 @@ static PyObject *Packet_get_time(Packet *self){
 }
 
 
+static PyObject *Packet_get_format(Packet *self){
+    return Py_BuildValue("i", ((EthernetF0_Message *)self->first_msg)->CSDW->Format);
+}
+
+
 static PySequenceMethods Packet_sequence_methods = {
     (lenfunc)Packet_len,
 };
@@ -191,7 +238,7 @@ static PyMemberDef Packet_members[] = {
     {"data_length", T_UINT, offsetof(Packet, DataLength), 0, "Data Length (bytes)"},
     {"header_version", T_UBYTE, offsetof(Packet, HeaderVersion), 0, "Header version"},
     {"sequence_number", T_UBYTE, offsetof(Packet, SequenceNumber), 0, "Sequence number"},
-    {"packet_flags", T_UBYTE, offsetof(Packet, PacketFlags), 0, "Packet flags"},
+    {"flags", T_UBYTE, offsetof(Packet, PacketFlags), 0, "Packet flags"},
     {"data_type", T_UBYTE, offsetof(Packet, DataType), 0, "Data type"},
     {"checksum", T_USHORT, offsetof(Packet, Checksum), 0, "Header checksum"},
 
@@ -210,8 +257,16 @@ static PyMethodDef Packet_methods[] = {
 
 static PyGetSetDef Packet_getset[] = {
     {"rtc", (getter)Packet_get_rtc, NULL, "10Mhz RTC clock"},
+
+    // Ethernet format 0
+    {"format", (getter)Packet_get_format, NULL, "Time tag bits from Ethernet format 0 CSDW"},
+
+    // 1553
     {"ttb", (getter)Packet_get_ttb, NULL, "Time tag bits from 1553 CSDW"},
+
+    // Time packets
     {"time", (getter)Packet_get_time, NULL, "Absolute time (time format 1)"},
+
     {NULL},
 };
 

@@ -1,5 +1,6 @@
 
 #include "packet.h"
+#include "libirig106/src/i106_decode_1553f1.h"
 
 
 typedef struct MS1553Msg {
