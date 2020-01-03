@@ -8,6 +8,7 @@
 #include "1553.h"
 #include "ethernet.h"
 #include "arinc429.h"
+#include "discrete.h"
 
 
 static PyMethodDef funcs[] = {
@@ -25,6 +26,7 @@ PyMODINIT_FUNC PyInit_i106(void){
     add_1553_class(m);
     add_ethernet_class(m);
     add_arinc_class(m);
+    add_discrete_class(m);
     return m;
 }
 

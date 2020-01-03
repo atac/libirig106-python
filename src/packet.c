@@ -8,6 +8,7 @@
 #include "ethernet.h"
 #include "packet.h"
 #include "arinc429.h"
+#include "discrete.h"
 
 
 static void Packet_dealloc(Packet *self){
@@ -97,6 +98,13 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
             self->first_msg = malloc(msg_size);
             type_name = "FirstArinc429F0";
             status = I106_Decode_FirstArinc429F0(&header, self->body, (Arinc429F0_Message *)self->first_msg);
+            break;
+
+        case I106CH10_DTYPE_DISCRETE:
+            msg_size = sizeof(DiscreteF1_Message);
+            self->first_msg = malloc(msg_size);
+            type_name = "FirstDiscreteF1";
+            status = I106_Decode_FirstDiscreteF1(&header, self->body, (DiscreteF1_Message *)self->first_msg);
             break;
     }
 
