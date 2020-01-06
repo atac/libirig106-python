@@ -35,6 +35,7 @@ class Clean(Command):
                     os.remove(path)
 
 
+# Install base library if missing
 try:
     if not os.listdir('src/libirig106'):
         os.system('git submodule init && git submodule update')
@@ -42,17 +43,10 @@ except Exception as err:
     print(err)
 
 
-# Find source and header files.
-SOURCES, HEADERS = [], []
-SOURCES += glob('src/*.c')
-HEADERS += glob('src/*.h')
-SOURCES += glob('src/libirig106/src/*.c')
-HEADERS += glob('src/libirig106/src/*.h')
-
 # Define flags based on platform.
-LINK_FLAGS = []
 if sys.platform == 'win32':
     FLAGS = ['/Od', '/EHsc', '/MT']
+    LINK_FLAGS = []
 else:
     FLAGS = [
         '-c',
@@ -67,8 +61,8 @@ else:
 
 EXT = Extension(
     'i106',
-    SOURCES,
-    depends=HEADERS,
+    glob('src/*.c') + glob('src/libirig106/src/*.c'),
+    depends=glob('src/*.h') + glob('src/libirig106/src/*.h'),
     extra_compile_args=FLAGS,
     extra_link_args=LINK_FLAGS,
 )
