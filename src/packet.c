@@ -74,11 +74,10 @@ static int Packet_init(Packet *self, PyObject *args, PyObject *kwargs){
     char *type_name;
     switch (self->DataType){
         case I106CH10_DTYPE_VIDEO_FMT_0:
-            self->first_msg = malloc(sizeof(VideoF0_Message));
-            if ((status = I106_Decode_FirstVideoF0(&header, self->body, (VideoF0_Message *)self->first_msg))){
-                PyErr_Format(PyExc_RuntimeError, "I106DecodeFirstVideo: %s", I106ErrorString(status));
-                return -1;
-            }
+            msg_size = sizeof(VideoF0_Message);
+            self->first_msg = malloc(msg_size);
+            type_name = "FirstVideoF0";
+            status = I106_Decode_FirstVideoF0(&header, self->body, (VideoF0_Message *)self->first_msg);
             break;
 
         case I106CH10_DTYPE_1553_FMT_1:
@@ -132,8 +131,14 @@ static PyObject *Packet_get_rtc(Packet *self, void *closure){
 
 static Py_ssize_t Packet_len(Packet *self){
     Py_ssize_t len = 0;
+    int msg_size = 0;
 
     switch (self->DataType){
+        case I106CH10_DTYPE_VIDEO_FMT_0:
+            msg_size = 188;
+            if (((VideoF0_Message *)self->first_msg)->CSDW->IPH)
+                msg_size += 8;
+            break;
         case I106CH10_DTYPE_1553_FMT_1:
             len = ((MS1553F1_Message *)self->first_msg)->CSDW->MessageCount;
             break;
@@ -146,6 +151,9 @@ static Py_ssize_t Packet_len(Packet *self){
         default:
             len = 0;
     }
+
+    if (msg_size)
+        return self->DataLength / msg_size;
 
     return len;
 }
@@ -161,6 +169,11 @@ static PyObject *Packet_next(Packet *self){
 
     switch (self->DataType){
         
+        case I106CH10_DTYPE_VIDEO_FMT_0:
+            msg = New_VideoF0Message((PyObject *)self);
+            status = I106_Decode_NextVideoF0((I106C10Header *)&self->SyncPattern, (VideoF0_Message *)self->cur_msg);
+            break;
+
         case I106CH10_DTYPE_1553_FMT_1:
             msg = New_MS1553Msg((PyObject *)self);
             status = I106_Decode_Next1553F1((MS1553F1_Message *)self->cur_msg);
@@ -223,6 +236,31 @@ static PyObject *Packet_get_format(Packet *self){
 }
 
 
+static PyObject *Packet_get_type(Packet *self){
+    return Py_BuildValue("i", ((VideoF0_Message *)self->first_msg)->CSDW->Type);
+}
+
+
+static PyObject *Packet_get_klv(Packet *self){
+    return Py_BuildValue("i", ((VideoF0_Message *)self->first_msg)->CSDW->KLV);
+}
+
+
+static PyObject *Packet_get_srs(Packet *self){
+    return Py_BuildValue("i", ((VideoF0_Message *)self->first_msg)->CSDW->SRS);
+}
+
+
+static PyObject *Packet_get_iph(Packet *self){
+    return Py_BuildValue("i", ((VideoF0_Message *)self->first_msg)->CSDW->IPH);
+}
+
+
+static PyObject *Packet_get_et(Packet *self){
+    return Py_BuildValue("i", ((VideoF0_Message *)self->first_msg)->CSDW->ET);
+}
+
+
 static PySequenceMethods Packet_sequence_methods = {
     (lenfunc)Packet_len,
 };
@@ -255,6 +293,7 @@ static PyMethodDef Packet_methods[] = {
 };
 
 
+// @TODO: add setters where possible
 static PyGetSetDef Packet_getset[] = {
     {"rtc", (getter)Packet_get_rtc, NULL, "10Mhz RTC clock"},
 
@@ -266,6 +305,13 @@ static PyGetSetDef Packet_getset[] = {
 
     // Time packets
     {"time", (getter)Packet_get_time, NULL, "Absolute time (time format 1)"},
+
+    // Video Format 0
+    {"type", (getter)Packet_get_type, NULL, "Payload type"},
+    {"klv", (getter)Packet_get_klv, NULL, "KLV present"},
+    {"srs", (getter)Packet_get_srs, NULL, "SCR/RTC sync"},
+    {"iph", (getter)Packet_get_iph, NULL, "Intra-packet header"},
+    {"et", (getter)Packet_get_et, NULL, "Embedded time"},
 
     {NULL},
 };

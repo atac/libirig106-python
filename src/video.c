@@ -163,7 +163,7 @@ static PyTypeObject VideoMsg_Type = {
 };
 
 
-PyObject *New_VideoMsg(PyObject *parent){
+PyObject *New_VideoF0Message(PyObject *parent){
     PyObject *packet_args = Py_BuildValue("(O)", parent);
     PyObject *p = PyObject_CallObject((PyObject *) &VideoMsg_Type, packet_args);
     Py_DECREF(packet_args);
@@ -171,7 +171,7 @@ PyObject *New_VideoMsg(PyObject *parent){
 }
 
 
-void add_video_class(PyObject *module){
+void add_videof0_class(PyObject *module){
 	if (PyType_Ready(&VideoMsg_Type) < 0)
         return;
 

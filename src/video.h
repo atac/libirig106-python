@@ -9,5 +9,5 @@ typedef struct VideoMsg {
     VideoF0_Message msg;
 } VideoMsg;
 
-PyObject *New_VideoMessage(PyObject *parent);
-void add_video_class(PyObject *module);
+PyObject *New_VideoF0Message(PyObject *parent);
+void add_videof0_class(PyObject *module);
