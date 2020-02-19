@@ -6,20 +6,20 @@
 #include "video.h"
 
 
-static void VideoMsg_dealloc(VideoMsg *self){
+static void VideoF0Msg_dealloc(VideoF0Msg *self){
     Py_DECREF(self->packet);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 
-static PyObject *VideoMsg_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
-    VideoMsg *self = (VideoMsg *)type->tp_alloc(type, 0);
+static PyObject *VideoF0Msg_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
+    VideoF0Msg *self = (VideoF0Msg *)type->tp_alloc(type, 0);
 
     return (PyObject *)self;
 }
 
 
-static int VideoMsg_init(VideoMsg *self, PyObject *args, PyObject *kwargs){
+static int VideoF0Msg_init(VideoF0Msg *self, PyObject *args, PyObject *kwargs){
     I106Status status;
 
     PyObject *tmp;
@@ -36,22 +36,24 @@ static int VideoMsg_init(VideoMsg *self, PyObject *args, PyObject *kwargs){
 }
 
 
-static Py_ssize_t VideoMsg_len(PyObject *self){
+static Py_ssize_t VideoF0Msg_len(PyObject *self){
     Py_ssize_t msg_size = 188;
-    if (((VideoMsg *)self)->msg.CSDW->ET)
+    if (((VideoF0Msg *)self)->msg.CSDW->ET)
         msg_size += sizeof(VideoF0_IPH);
-
-    return (Py_ssize_t)((VideoMsg *)self)->packet->DataLength / msg_size;
+    return msg_size;
 }
 
 
-static PyObject *VideoMsg_bytes(VideoMsg *self){
+static PyObject *VideoF0Msg_bytes(VideoF0Msg *self){
     int buf_size = 188;
     if (self->msg.CSDW->ET)
         buf_size += sizeof(VideoF0_IPH);
 
     void *buffer = malloc(buf_size);
-    memcpy(buffer, self->msg.IPH, buf_size);
+    if (self->msg.CSDW->IPH)
+        memcpy(buffer, self->msg.IPH, buf_size);
+    else
+        memcpy(buffer, self->msg.Data, buf_size);
 
     PyObject *result = Py_BuildValue("y#", (char *)buffer, buf_size);
     free(buffer);
@@ -60,60 +62,60 @@ static PyObject *VideoMsg_bytes(VideoMsg *self){
 }
 
 
-static PyMemberDef VideoMsg_members[] = {
-    {"packet", T_OBJECT_EX, offsetof(VideoMsg, packet), 0, "Parent C10 object"},
+static PyMemberDef VideoF0Msg_members[] = {
+    {"packet", T_OBJECT_EX, offsetof(VideoF0Msg, packet), 0, "Parent C10 object"},
     {NULL}
 };
 
 
-static PyMethodDef VideoMsg_methods[] = {
-    {"__bytes__", (PyCFunction)VideoMsg_bytes, METH_NOARGS, "Return the message as raw bytes"},
+static PyMethodDef VideoF0Msg_methods[] = {
+    {"__bytes__", (PyCFunction)VideoF0Msg_bytes, METH_NOARGS, "Return the message as raw bytes"},
     {NULL}  /* Sentinel */
 };
 
 
-static PyGetSetDef VideoMsg_getset[] = {
-    /* {"rtc", (getter)VideoMsg_get_rtc, NULL, "RTC from IPTS"}, */
+static PyGetSetDef VideoF0Msg_getset[] = {
+    /* {"rtc", (getter)VideoF0Msg_get_rtc, NULL, "RTC from IPTS"}, */
     {NULL}
 };
 
 
-static PyObject *VideoMsg_GetItem_seq(VideoMsg *self, Py_ssize_t i){
+static PyObject *VideoF0Msg_GetItem_seq(VideoF0Msg *self, Py_ssize_t i){
     uint16_t w = *(self->msg.Data + (uint16_t)i);
     return Py_BuildValue("i", w);
 }
 
 
-static PyObject *VideoMsg_GetItem(VideoMsg *self, PyObject *key){
+static PyObject *VideoF0Msg_GetItem(VideoF0Msg *self, PyObject *key){
     if (!PySlice_Check(key)){
         int offset;
         PyArg_Parse(key, "i", &offset);
-        return VideoMsg_GetItem_seq(self, (Py_ssize_t)offset);
+        return VideoF0Msg_GetItem_seq(self, (Py_ssize_t)offset);
     }
 
     Py_ssize_t length, start, stop, step;
-    PySlice_GetIndicesEx(key, VideoMsg_len((PyObject *)self), &start, &stop, &step, &length);
+    PySlice_GetIndicesEx(key, VideoF0Msg_len((PyObject *)self), &start, &stop, &step, &length);
 
     PyObject *t = PyTuple_New(length);
     for (Py_ssize_t i=0; i<(length); i++){
-        PyTuple_SetItem(t, i, VideoMsg_GetItem_seq(self, i + start));
+        PyTuple_SetItem(t, i, VideoF0Msg_GetItem_seq(self, i + start));
     }
 
     return t;
 } 
 
 
-static PyMappingMethods VideoMsg_map = {
-    VideoMsg_len, // sq_length
-    (binaryfunc)VideoMsg_GetItem, // sq_item
+static PyMappingMethods VideoF0Msg_map = {
+    VideoF0Msg_len, // sq_length
+    (binaryfunc)VideoF0Msg_GetItem, // sq_item
 };
 
 
-static PySequenceMethods VideoMsg_seq = {
-    VideoMsg_len, // sq_length
+static PySequenceMethods VideoF0Msg_seq = {
+    VideoF0Msg_len, // sq_length
     0, // sq_concat
     0, // sq_repeat
-    (ssizeargfunc)VideoMsg_GetItem_seq, // sq_item
+    (ssizeargfunc)VideoF0Msg_GetItem_seq, // sq_item
     0, // sq_ass_item
     0, // sq_contains
     0, // sq_inplace_concat
@@ -121,20 +123,20 @@ static PySequenceMethods VideoMsg_seq = {
 };
 
 
-static PyTypeObject VideoMsg_Type = {
+static PyTypeObject VideoF0Msg_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "i106.VideoMsg",             /* tp_name */
-    sizeof(VideoMsg), /* tp_basicsize */
+    "i106.VideoF0Msg",             /* tp_name */
+    sizeof(VideoF0Msg), /* tp_basicsize */
     0,                         /* tp_itemsize */
-    (destructor)VideoMsg_dealloc,                         /* tp_dealloc */
+    (destructor)VideoF0Msg_dealloc,                         /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
     0,                         /* tp_compare */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
-    &VideoMsg_seq,            /* tp_as_sequence */
-    &VideoMsg_map,            /* tp_as_mapping */
+    &VideoF0Msg_seq,            /* tp_as_sequence */
+    &VideoF0Msg_map,            /* tp_as_mapping */
     0,                         /* tp_hash */
     0,                         /* tp_call */
     0,                         /* tp_str */
@@ -149,32 +151,32 @@ static PyTypeObject VideoMsg_Type = {
     0,                         /* tp_weaklistoffset */
     PyObject_SelfIter,                         /* tp_iter */
     0,                         /* tp_iternext */
-    VideoMsg_methods,             /* tp_methods */
-    VideoMsg_members,             /* tp_members */
-    VideoMsg_getset,                         /* tp_getset */
+    VideoF0Msg_methods,             /* tp_methods */
+    VideoF0Msg_members,             /* tp_members */
+    VideoF0Msg_getset,                         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    (initproc)VideoMsg_init,      /* tp_init */
+    (initproc)VideoF0Msg_init,      /* tp_init */
     0,                         /* tp_alloc */
-    VideoMsg_new,                 /* tp_new */
+    VideoF0Msg_new,                 /* tp_new */
 };
 
 
 PyObject *New_VideoF0Message(PyObject *parent){
     PyObject *packet_args = Py_BuildValue("(O)", parent);
-    PyObject *p = PyObject_CallObject((PyObject *) &VideoMsg_Type, packet_args);
+    PyObject *p = PyObject_CallObject((PyObject *) &VideoF0Msg_Type, packet_args);
     Py_DECREF(packet_args);
     return p;
 }
 
 
 void add_videof0_class(PyObject *module){
-	if (PyType_Ready(&VideoMsg_Type) < 0)
+	if (PyType_Ready(&VideoF0Msg_Type) < 0)
         return;
 
-    Py_INCREF(&VideoMsg_Type);
-    PyModule_AddObject(module, "VideoMsg", (PyObject *)&VideoMsg_Type);
+    Py_INCREF(&VideoF0Msg_Type);
+    PyModule_AddObject(module, "VideoF0Msg", (PyObject *)&VideoF0Msg_Type);
 }
